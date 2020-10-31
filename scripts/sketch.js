@@ -4,7 +4,7 @@ function setup() {
 
   createCanvas(window.innerWidth, window.innerHeight);
 
-  this.curHue = 0;
+  this.curHue = 90;
   this.board = newBoard();
 
   noLoop();
