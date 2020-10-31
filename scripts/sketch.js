@@ -7,6 +7,7 @@ function setup() {
   this.curHue = 0;
   this.board = newBoard();
 
+  noLoop();
 }
 
 function boardSize() {
@@ -45,6 +46,7 @@ function mouseClicked() {
   }
 
   board.onClick(mouseX, mouseY);
+  draw();
 }
 
 function windowResized() {
