@@ -27,7 +27,6 @@ function newBoard() {
     pos
   } = boardSize();
 
-  console.log({size, pos})
   return new Board(size, pos, this.curHue);
 }
 
