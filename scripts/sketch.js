@@ -50,14 +50,13 @@ function touchStarted() {
 function windowResized() {
     resizeCanvas(window.innerWidth, window.innerHeight);
 
-    const { size, pos } = boardSize();
+    const { size, pos } = boardSize(window.innerWidth, window.innerHeight);
 
-    this.board.size = size;
-    this.board.pos = pos;
+    this.board.updateDims(size, pos);
 }
 
-function boardSize() {
-    const size = Math.min(width, height) * 0.66;
+function boardSize(w, h) {
+    const size = Math.min(w, h) * 0.66;
     return {
         size,
         pos: {
@@ -68,7 +67,7 @@ function boardSize() {
 }
 
 function newBoard() {
-    const { size, pos } = boardSize();
+    const { size, pos } = boardSize(window.innerWidth, window.innerHeight);
 
     return new Board(size, pos, this.curHue);
 }

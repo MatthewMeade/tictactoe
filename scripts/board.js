@@ -255,4 +255,11 @@ class Board {
 
         return this.win;
     }
+
+    updateDims(size, pos) {
+      this.size = size;
+      this.pos = pos;
+
+      this.spaceObjs.forEach(e =>  e.boardSize = size);
+    }
 }
