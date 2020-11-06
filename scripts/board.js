@@ -7,12 +7,12 @@ class TTC_SPACE {
         this.animScale = 0;
     }
 
-    draw() {
+    draw(gridAnimScale) {
         if (this.type === 0) {
             return;
         }
 
-        const boxWidth = this.boardSize / 3;
+        const boxWidth = gridAnimScale * this.boardSize / 3;
 
         const x = boxWidth * 0.5 + (this.index % 3) * boxWidth;
         const y = boxWidth * 0.5 + Math.floor(this.index / 3) * boxWidth;
@@ -128,7 +128,7 @@ class Board {
 
         endShape();
 
-        this.spaceObjs.forEach((s) => s.draw());
+        this.spaceObjs.forEach((s) => s.draw(this.gridAnimState));
 
         if (this.win) {
             stroke('white');
