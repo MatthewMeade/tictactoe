@@ -1,8 +1,7 @@
 class TTC_SPACE {
-    constructor(index, animator, boardSize) {
+    constructor(index, boardSize) {
         this.index = index;
         this.type = 0;
-        this.animator = animator;
         this.boardSize = boardSize;
 
         this.animScale = 0;
@@ -21,7 +20,7 @@ class TTC_SPACE {
         push();
 
         if (this.type === 1) {
-            const offset = (0.75 * boxWidth * 0.5 - 25) * this.animScale;
+            const offset = ( boxWidth * 0.33) * this.animScale;
             beginShape();
 
             vertex(x - offset, y - offset);
@@ -34,14 +33,14 @@ class TTC_SPACE {
         }
 
         if (this.type === -1) {
-            circle(x, y, this.animScale * boxWidth * 0.75 - 25);
+            circle(x, y, this.animScale * boxWidth * 0.66);
         }
 
         pop();
     }
 
     setSpace(val) {
-        this.animator.addAnimation(
+        Animator.addAnimation(
             {
                 from: 0,
                 to: 1,
@@ -56,12 +55,10 @@ class TTC_SPACE {
 }
 
 class Board {
-    constructor(size, pos, bgHue) {
+    constructor(size, pos) {
         this.size = size;
         this.pos = pos;
         this.spaces = Array(9).fill(0);
-        this.bgHue = bgHue;
-        this.animator = new Animator();
 
         this.winLineAnimState = 0;
         this.gridAnimState = 0;
@@ -73,12 +70,12 @@ class Board {
 
         this.spaceObjs = [];
         for (let i = 0; i < 9; i++) {
-            this.spaceObjs[i] = new TTC_SPACE(i, this.animator, size);
+            this.spaceObjs[i] = new TTC_SPACE(i, size);
         }
 
         this.turn = 1;
 
-        this.animator.addAnimation(
+        Animator.addAnimation(
             {
                 from: 0,
                 to: 1,
@@ -90,8 +87,6 @@ class Board {
     }
 
     draw() {
-        this.animator.update();
-
         push();
 
         const boxWidth = (this.gridAnimState * this.size) / 3;
@@ -107,7 +102,9 @@ class Board {
 
         translate(_x, _y);
 
-        strokeWeight(20);
+        const r = size / 33;
+
+        strokeWeight(r);
         stroke(0, 0, 100, 0.8);
 
         beginShape();
@@ -239,7 +236,7 @@ class Board {
         }
 
         if (this.win) {
-            this.animator.addAnimation(
+            Animator.addAnimation(
                 {
                     from: 0,
                     to: 1,

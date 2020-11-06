@@ -6,22 +6,21 @@ function easeInOutBack(x) {
 }
 
 class Animator {
-    constructor() {
-        this.animations = [];
-    }
+    static animations = [];
 
-    addAnimation(def, callback, curve) {
-        this.animations.push({def, startTime: Date.now(), callback, curve});
+    static addAnimation(def, callback, curve) {
+        Animator.animations.push({def, startTime: Date.now(), callback, curve});
         callback(def.from);
     }
 
-    update() {
+    static update() {
 
         const now = Date.now();
 
+        const currentAnims = Animator.animations;
         const updatedAnims = [];
-        for(let i = 0; i < this.animations.length; i++) {
-            const {def, startTime, callback, curve} = this.animations[i];
+        for(let i = 0; i < currentAnims.length; i++) {
+            const {def, startTime, callback, curve} = currentAnims[i];
             const {from, to, time} = def;
 
             const aliveTime = now - startTime;
@@ -40,14 +39,14 @@ class Animator {
                 callback(to);
             } else {
                 callback(retVal);
-                updatedAnims.push(this.animations[i]);
+                updatedAnims.push(currentAnims[i]);
             }
         }
 
-        this.animations = updatedAnims;
+        Animator.animations = updatedAnims;
     }
 
     clearAnimations() {
-        this.animations = [];
+        Animator.animations = [];
     }
 }

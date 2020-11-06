@@ -1,45 +1,81 @@
 const COLOR_STEP = 5;
+const TARGET_FPS = 30;
 
 function setup() {
     colorMode(HSB);
+    window.renderScale = 1;
 
-    createCanvas(window.innerWidth, window.innerHeight);
+    const w = window.innerWidth * window.renderScale;
+    const h = window.innerHeight * window.renderScale;
+    this.canvas = createCanvas(w, h);
+
+    this.canvas.elt.style.width = '100vw';
+    this.canvas.elt.style.height = '100vh';
 
     this.curHue = Math.round(Math.random() * COLOR_STEP) * (360 / COLOR_STEP);
-    this.board = newBoard();
+    document.body.style.backgroundColor = color(curHue, 75, 90).toString()
 
-    this.circleR = 0;
+    newBoard();
 
-    this.animator = new Animator();
+    adjustCanvasSize();
+
+    setTimeout(()=>adjustResolution(), 1000);
+
 }
 
 function draw() {
     background(this.curHue, 75, 90);
 
-    this.animator.update();
+    Animator.update();
 
-    // fill('white')
-    // textSize(50);
-    // text(frameRate().toFixed(0), 50, 50);
-
-    noFill();
-    strokeWeight(10);
     this.board.draw();
 
+    debugText();
+
+    if (frameCount % 200 === 0) adjustResolution();
 }
 
-function keyPressed(){
-    this.animator.clearAnimations();
+
+const SCALE_MIN = 0.1;
+
+function adjustResolution() {
+    const fps = Math.round(frameRate());
+
+    if (fps <= TARGET_FPS && window.renderScale > SCALE_MIN) {
+        window.renderScale /= 2;    
+        adjustCanvasSize();
+    }
+   
+}
+
+
+function debugText() {
+
+    if (!this.showDebug) return;
+
+    push();
+    fill('white');
+    textSize(20)
+    text(`Scale: ${window.renderScale}\nFPS: ${frameRate()}`, 10, 20);
+    text(`Width: ${width}\nHeight: ${height}`, 10, 70)
+    pop();
 }
 
 function click() {
     if (board.win) {
-        this.board = newBoard();
+        newBoard();
     } else {
         board.onClick(mouseX, mouseY);
     }
 
     this.curHue = (this.curHue + 360 / COLOR_STEP) % 360;
+    document.body.style.backgroundColor = color(curHue, 75, 90).toString()
+}
+
+function keyPressed() {
+    if (key === 'd') {
+        this.showDebug = !this.showDebug;
+    }
 }
 
 function touchStarted() {
@@ -48,11 +84,20 @@ function touchStarted() {
 }
 
 function windowResized() {
-    resizeCanvas(window.innerWidth, window.innerHeight);
+    adjustCanvasSize();
+}
 
-    const { size, pos } = boardSize(window.innerWidth, window.innerHeight);
+function adjustCanvasSize() {
+    const w = window.innerWidth * window.renderScale;
+    const h = window.innerHeight * window.renderScale;
+    resizeCanvas(w, h);
 
+    this.canvas.elt.style.width = '100vw';
+    this.canvas.elt.style.height = '100vh';
+
+    const { size, pos } = boardSize(w, h);
     this.board.updateDims(size, pos);
+
 }
 
 function boardSize(w, h) {
@@ -67,7 +112,9 @@ function boardSize(w, h) {
 }
 
 function newBoard() {
-    const { size, pos } = boardSize(window.innerWidth, window.innerHeight);
+    const w = window.innerWidth * window.renderScale;
+    const h = window.innerHeight * window.renderScale;
 
-    return new Board(size, pos, this.curHue);
+    const { size, pos } = boardSize(w, h);
+    this.board = new Board(size, pos);
 }
