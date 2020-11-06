@@ -69,8 +69,6 @@ function debugText() {
 
 function click() {
     if (board.win) {
-        clearTimeout(this.newBoardTimeout);
-        this.newBoardTimeout = null;
         newBoard();
     } else {
         board.onClick(mouseX, mouseY);
@@ -120,6 +118,9 @@ function boardSize(w, h) {
 }
 
 function newBoard() {
+    clearTimeout(this.newBoardTimeout);
+    this.newBoardTimeout = null;
+
     const w = window.innerWidth * window.renderScale;
     const h = window.innerHeight * window.renderScale;
 
