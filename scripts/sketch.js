@@ -13,7 +13,9 @@ function setup() {
     this.canvas.elt.style.height = '100vh';
 
     this.curHue = Math.round(Math.random() * COLOR_STEP) * (360 / COLOR_STEP);
-    document.body.style.backgroundColor = color(curHue, 75, 90).toString()
+    document.body.style.backgroundColor = color(curHue, 75, 90).toString();
+
+    this.newBoardTimeout = null;
 
     newBoard();
 
@@ -33,6 +35,10 @@ function draw() {
     debugText();
 
     if (frameCount % 200 === 0) adjustResolution();
+
+    if (board.win && !this.newBoardTimeout) {
+        this.newBoardTimeout = setTimeout(() => {newBoard()}, 2500);
+    }
 }
 
 
@@ -63,6 +69,8 @@ function debugText() {
 
 function click() {
     if (board.win) {
+        clearTimeout(this.newBoardTimeout);
+        this.newBoardTimeout = null;
         newBoard();
     } else {
         board.onClick(mouseX, mouseY);
