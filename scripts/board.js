@@ -19,7 +19,7 @@ class TTC_SPACE {
 
         push();
 
-        if (this.type === 1) {
+        if (this.type === X_TURN) {
             const offset = ( boxWidth * 0.33) * this.animScale;
             beginShape();
 
@@ -32,7 +32,7 @@ class TTC_SPACE {
             endShape();
         }
 
-        if (this.type === -1) {
+        if (this.type === O_TURN) {
             circle(x, y, this.animScale * boxWidth * 0.66);
         }
 
@@ -63,17 +63,12 @@ class Board {
         this.winLineAnimState = 0;
         this.gridAnimState = 0;
 
-        // this.spaces = [1, -1, 1,
-        //   -1, 0, -1,
-        //   1, -1, 1
-        // ]
-
         this.spaceObjs = [];
         for (let i = 0; i < 9; i++) {
             this.spaceObjs[i] = new TTC_SPACE(i, size);
         }
 
-        this.turn = 1;
+        this.turn = X_TURN;
 
         this.clickCB = () => console.log("No Callback defined for board click");
         this.moveCN = () => console.log("No Callback defined for board move");
@@ -190,7 +185,7 @@ class Board {
     makeMove(n) {
         this.spaces[n] = this.turn;
         this.spaceObjs[n].setSpace(this.turn);
-        this.turn *= -1;
+        this.turn *= O_TURN;
 
         this.checkForWin();
 
@@ -241,6 +236,7 @@ class Board {
         }
 
         if (this.win) {
+            this.win /= 3;
             Animator.addAnimation(
                 {
                     from: 0,

@@ -4,8 +4,8 @@ class GameManager {
         this.newBoardTimeout = null;
         
         this.isAi = {
-            [1]: false,
-            [-1]: true
+            [X_TURN]: false,
+            [O_TURN]: true
         };
 
         this.newBoard();
