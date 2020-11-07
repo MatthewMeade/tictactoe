@@ -55,7 +55,7 @@ class TTC_SPACE {
 }
 
 class Board {
-    constructor(size, pos) {
+    constructor(size=0, pos=0) {
         this.size = size;
         this.pos = pos;
         this.spaces = Array(9).fill(0);

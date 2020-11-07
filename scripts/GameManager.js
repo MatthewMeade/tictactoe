@@ -29,7 +29,7 @@ class GameManager {
         clearTimeout(this.newBoardTimeout);
         this.newBoardTimeout = null;
         
-        this.board = new Board(0, 0);
+        this.board = new Board();
 
         resizeBoard(this.board);
     }
