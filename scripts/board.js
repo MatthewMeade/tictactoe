@@ -260,3 +260,22 @@ class Board {
       this.spaceObjs.forEach(e =>  e.boardSize = size);
     }
 }
+
+function boardSize(w, h) {
+    const size = Math.min(w, h) * 0.66;
+    return {
+        size,
+        pos: {
+            x: (width - size) / 2,
+            y: (height - size) / 2
+        }
+    };
+}
+
+function resizeBoard(board) {
+    const w = window.innerWidth * window.renderScale;
+    const h = window.innerHeight * window.renderScale;
+    const { size, pos } = boardSize(w, h);
+
+    board.updateDims(size, pos);
+}

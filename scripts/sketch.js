@@ -1,28 +1,22 @@
-const COLOR_STEP = 5;
+const COLOR_STEP = 10;
 const TARGET_FPS = 30;
 
 function setup() {
+    this.GM = new GameManager(); 
+    
     colorMode(HSB);
     window.renderScale = 1;
-
-    const w = window.innerWidth * window.renderScale;
-    const h = window.innerHeight * window.renderScale;
-    this.canvas = createCanvas(w, h);
-
-    this.canvas.elt.style.width = '100vw';
-    this.canvas.elt.style.height = '100vh';
-
-    this.curHue = Math.round(Math.random() * COLOR_STEP) * (360 / COLOR_STEP);
-    document.body.style.backgroundColor = color(curHue, 75, 90).toString();
-
-    this.newBoardTimeout = null;
-
-    newBoard();
-
-    adjustCanvasSize();
-
+    updateBGColor(Math.random() * 360);
+    
+    this.canvas = createCanvas();
+    windowResized();
+    
     setTimeout(()=>adjustResolution(), 1000);
+}
 
+function updateBGColor(h) {
+    this.curHue = h ?? (this.curHue + 360 / COLOR_STEP) % 360;
+    document.body.style.backgroundColor = color(curHue, 75, 90).toString()
 }
 
 function draw() {
@@ -30,30 +24,12 @@ function draw() {
 
     Animator.update();
 
-    this.board.draw();
+    this.GM.draw();
 
     debugText();
 
     if (frameCount % 200 === 0) adjustResolution();
-
-    if (board.win && !this.newBoardTimeout) {
-        this.newBoardTimeout = setTimeout(() => {newBoard()}, 2500);
-    }
 }
-
-
-const SCALE_MIN = 0.1;
-
-function adjustResolution() {
-    const fps = Math.round(frameRate());
-
-    if (fps <= TARGET_FPS && window.renderScale > SCALE_MIN) {
-        window.renderScale /= 2;    
-        adjustCanvasSize();
-    }
-   
-}
-
 
 function debugText() {
 
@@ -67,17 +43,6 @@ function debugText() {
     pop();
 }
 
-function click() {
-    if (board.win) {
-        newBoard();
-    } else {
-        board.onClick(mouseX, mouseY);
-    }
-
-    this.curHue = (this.curHue + 360 / COLOR_STEP) % 360;
-    document.body.style.backgroundColor = color(curHue, 75, 90).toString()
-}
-
 function keyPressed() {
     if (key === 'd') {
         this.showDebug = !this.showDebug;
@@ -85,15 +50,13 @@ function keyPressed() {
 }
 
 function touchStarted() {
-    click();
+    this.GM.onClick();
+    updateBGColor();
     return false;
 }
 
-function windowResized() {
-    adjustCanvasSize();
-}
 
-function adjustCanvasSize() {
+function windowResized() {
     const w = window.innerWidth * window.renderScale;
     const h = window.innerHeight * window.renderScale;
     resizeCanvas(w, h);
@@ -101,29 +64,16 @@ function adjustCanvasSize() {
     this.canvas.elt.style.width = '100vw';
     this.canvas.elt.style.height = '100vh';
 
-    const { size, pos } = boardSize(w, h);
-    this.board.updateDims(size, pos);
-
+    resizeBoard(this.GM.board);
 }
 
-function boardSize(w, h) {
-    const size = Math.min(w, h) * 0.66;
-    return {
-        size,
-        pos: {
-            x: (width - size) / 2,
-            y: (height - size) / 2
-        }
-    };
-}
+const SCALE_MIN = 0.1;
+function adjustResolution() {
+    const fps = Math.round(frameRate());
 
-function newBoard() {
-    clearTimeout(this.newBoardTimeout);
-    this.newBoardTimeout = null;
-
-    const w = window.innerWidth * window.renderScale;
-    const h = window.innerHeight * window.renderScale;
-
-    const { size, pos } = boardSize(w, h);
-    this.board = new Board(size, pos);
+    if (fps <= TARGET_FPS && window.renderScale > SCALE_MIN) {
+        window.renderScale /= 2;    
+        windowResized();
+    }
+   
 }
