@@ -75,6 +75,9 @@ class Board {
 
         this.turn = 1;
 
+        this.clickCB = () => console.log("No Callback defined for board click");
+        this.moveCN = () => console.log("No Callback defined for board move");
+
         Animator.addAnimation(
             {
                 from: 0,
@@ -180,7 +183,7 @@ class Board {
         const index = row * 3 + col;
 
         if (this.spaces[index] === 0) {
-            this.makeMove(index);
+            this.clickCB(index);
         }
     }
 
@@ -190,6 +193,8 @@ class Board {
         this.turn *= -1;
 
         this.checkForWin();
+
+        this.moveCB(this.turn);
     }
 
     checkForWin() {

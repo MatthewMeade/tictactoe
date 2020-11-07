@@ -1,6 +1,9 @@
 const COLOR_STEP = 10;
 const TARGET_FPS = 30;
 
+const X_TURN = 1;
+const O_TURN = -1;
+
 function setup() {
     this.GM = new GameManager(); 
     
