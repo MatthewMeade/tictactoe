@@ -1,14 +1,15 @@
 class GameManager {
     constructor() {
-        
         this.newBoardTimeout = null;
-        
+
         this.isAi = {
             [X_TURN]: false,
             [O_TURN]: true
         };
 
         this.newBoard();
+
+        this.difficulty = 1;
     }
 
     onClick() {
@@ -36,19 +37,20 @@ class GameManager {
 
         this.board = new Board();
 
-        this.board.clickCB = (n) => this.onBoardClick(n);
-        this.board.moveCB = (n) => this.onBoardMove(n);
+        this.board.clickCB = this.onBoardClick.bind(this);
+        this.board.moveCB = this.onBoardMove.bind(this);
 
         resizeBoard(this.board);
 
         if (this.isAi[this.board.turn]) {
-            randomMove(this.board);
+            this.makeAiMove();
         }
+
     }
 
     onBoardMove(turn) {
         if (this.isAi[turn] && !this.board.win) {
-            setTimeout(() => randomMove(this.board), 250);
+            setTimeout(this.makeAiMove.bind(this), 250);
         }
     }
 
@@ -59,19 +61,19 @@ class GameManager {
 
         this.board.makeMove(n);
     }
-}
 
-function randomMove(board) {
+    makeAiMove() {
+        const { difficulty, board } = this;
 
-    updateBGColor();
+        if (!board.spaces.some((s) => s === 0)) return;
 
-    if (!board.spaces.some(s => s === 0)) {
-        return;
+        updateBGColor();
+
+        let move;
+        if (difficulty === 0) move = randomMove(board);
+        else if (difficulty === 1) move = randomAvoidLosing(board);
+        else move = findBestMove(board);
+        
+        this.board.makeMove(move);
     }
-
-    let s;
-    do {
-        s = Math.floor(Math.random() * 9);
-    } while (board.spaces[s] !== 0);
-    board.makeMove(s);
 }
