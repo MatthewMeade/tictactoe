@@ -8,9 +8,8 @@ function easeInOutBack(x) {
 class Animator {
     static animations = [];
 
-    static addAnimation(def, callback, curve) {
-        Animator.animations.push({def, startTime: Date.now(), callback, curve});
-        callback(def.from);
+    static addAnimation(def, callbacks, curve) {
+        Animator.animations.push({def, startTime: Date.now(), callbacks, curve});
     }
 
     static update() {
@@ -20,7 +19,7 @@ class Animator {
         const currentAnims = Animator.animations;
         const updatedAnims = [];
         for(let i = 0; i < currentAnims.length; i++) {
-            const {def, startTime, callback, curve} = currentAnims[i];
+            const {def, startTime, callbacks, curve} = currentAnims[i];
             const {from, to, time} = def;
 
             const aliveTime = now - startTime;
@@ -35,10 +34,13 @@ class Animator {
 
             const retVal = from + (perc * range)
 
+            const {done, update} = callbacks;
+
             if (aliveTime > time) {
-                callback(to);
+                update && update(to);
+                done && done(to);
             } else {
-                callback(retVal);
+                update && update(retVal);
                 updatedAnims.push(currentAnims[i]);
             }
         }

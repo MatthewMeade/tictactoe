@@ -46,7 +46,7 @@ class TTC_SPACE {
                 to: 1,
                 time: 250
             },
-            (val) => (this.animScale = val),
+            {update: (val) => (this.animScale = val)},
             easeInOutBack
         );
 
@@ -79,7 +79,7 @@ class Board {
                 to: 1,
                 time: 500
             },
-            (val) => (this.gridAnimState = val),
+            {update: (val) => (this.gridAnimState = val)},
             easeInOutBack
         );
     }
@@ -192,15 +192,19 @@ class Board {
         this.moveCB(this.turn);
     }
 
-    checkForWin() {
+    static CheckWin(board){
         const rowSums = [0, 0, 0]; // y = row
         const colSums = [0, 0, 0]; // x = col
         const diagSums = [0, 0, 0];
 
+        const {spaces} = board;
+
+        let win, winType, winLine;
+
         for (let x = 0; x < 3; x++) {
             for (let y = 0; y < 3; y++) {
                 const i = y + x * 3;
-                const val = this.spaces[i];
+                const val = spaces[i];
 
                 rowSums[x] += val;
                 colSums[y] += val;
@@ -217,41 +221,53 @@ class Board {
 
         for (let i = 0; i < 3; i++) {
             if (Math.abs(rowSums[i]) === 3) {
-                this.win = rowSums[i];
-                this.winType = 'ROW';
-                this.winLine = i;
+                win = rowSums[i];
+                winType = 'ROW';
+                winLine = i;
             }
 
             if (Math.abs(colSums[i]) === 3) {
-                this.win = colSums[i];
-                this.winType = 'COL';
-                this.winLine = i;
+                win = colSums[i];
+                winType = 'COL';
+                winLine = i;
             }
 
             if (Math.abs(diagSums[i]) === 3) {
-                this.win = diagSums[i];
-                this.winType = 'DIAG';
-                this.winLine = i;
+                win = diagSums[i];
+                winType = 'DIAG';
+                winLine = i;
             }
         }
 
-        if (this.win) {
-            this.win /= 3;
+        if (win) {
+            win /= 3;
+        } else if (!spaces.some((n) => n === 0)) {
+            win = 2;
+            winType = 'TIE';
+        }
+
+        return {win, winType, winLine};
+    }
+
+    checkForWin() {
+         const {win, winType, winLine} = Board.CheckWin(this);
+
+         this.win = win;
+         this.winType = winType;
+         this.winLine = winLine; 
+
+         if (this.win) {
             Animator.addAnimation(
                 {
                     from: 0,
                     to: 1,
                     time: 250
                 },
-                (val) => (this.winLineAnimState = val)
+                {update: (val) => (this.winLineAnimState = val)}
             );
-        } else if (!this.spaces.some((n) => n === 0)) {
-            this.win = 2;
-            this.winType = 'TIE';
-            return 2;
-        }
+         }
 
-        return this.win;
+         return this.win;
     }
 
     updateDims(size, pos) {
