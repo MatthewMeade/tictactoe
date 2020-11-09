@@ -71,7 +71,9 @@ class Board {
         this.turn = X_TURN;
 
         this.clickCB = () => console.log("No Callback defined for board click");
-        this.moveCN = () => console.log("No Callback defined for board move");
+        this.moveCB = () => console.log("No Callback defined for board move");
+        this.winCB = () => console.log("No Callback defined for board move");
+
 
         Animator.addAnimation(
             {
@@ -103,7 +105,9 @@ class Board {
         const r = size / 33;
 
         strokeWeight(r);
-        stroke(0, 0, 100, 0.8);
+
+        const color = themeColor();
+        stroke(color);
 
         beginShape();
 
@@ -265,6 +269,10 @@ class Board {
                 },
                 {update: (val) => (this.winLineAnimState = val)}
             );
+         }
+
+         if (this.win) {
+             this.winCB(this.win);
          }
 
          return this.win;
