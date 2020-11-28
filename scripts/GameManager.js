@@ -4,7 +4,7 @@ class GameManager {
 
         this.isAi = {
             [X_TURN]: false,
-            [O_TURN]: false
+            [O_TURN]: true
         };
 
         this.newBoard();
