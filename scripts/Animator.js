@@ -9,7 +9,10 @@ class Animator {
     static animations = [];
 
     static addAnimation(def, callbacks, curve) {
-        Animator.animations.push({def, startTime: Date.now(), callbacks, curve});
+        return new Promise((resolveP, reject) => {
+            Animator.animations.push({def, startTime: Date.now(), callbacks, curve, resolveP});
+        })
+
     }
 
     static update() {
@@ -19,8 +22,8 @@ class Animator {
         const currentAnims = Animator.animations;
         const updatedAnims = [];
         for(let i = 0; i < currentAnims.length; i++) {
-            const {def, startTime, callbacks, curve} = currentAnims[i];
-            const {from, to, time} = def;
+            const {def, startTime, callbacks, curve, resolveP} = currentAnims[i];
+            const {from = 0, to = 1, time = 1000} = def;
 
             const aliveTime = now - startTime;
             const range = to - from;
@@ -39,6 +42,7 @@ class Animator {
             if (aliveTime > time) {
                 update && update(to);
                 done && done(to);
+                resolveP(to);
             } else {
                 update && update(retVal);
                 updatedAnims.push(currentAnims[i]);

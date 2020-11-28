@@ -1,8 +1,8 @@
 class TTC_SPACE {
-    constructor(index, boardSize) {
+    constructor(index, size) {
         this.index = index;
         this.type = 0;
-        this.boardSize = boardSize;
+        this.size = size;
 
         this.animScale = 0;
     }
@@ -12,12 +12,18 @@ class TTC_SPACE {
             return;
         }
 
-        const boxWidth = gridAnimScale * this.boardSize / 3;
+        const boxWidth = gridAnimScale * this.size;
 
         const x = boxWidth * 0.5 + (this.index % 3) * boxWidth;
         const y = boxWidth * 0.5 + Math.floor(this.index / 3) * boxWidth;
 
         push();
+
+        noFill();
+        strokeWeight(lineWidth());
+        stroke(lineColor());
+        strokeJoin(ROUND);
+
 
         if (this.type === X_TURN) {
             const offset = ( boxWidth * 0.33) * this.animScale;
@@ -65,7 +71,7 @@ class Board {
 
         this.spaceObjs = [];
         for (let i = 0; i < 9; i++) {
-            this.spaceObjs[i] = new TTC_SPACE(i, size);
+            this.spaceObjs[i] = new TTC_SPACE(i, size / 3);
         }
 
         this.turn = X_TURN;
@@ -102,11 +108,10 @@ class Board {
 
         translate(_x, _y);
 
-        const r = size / 33;
 
-        strokeWeight(r);
+        strokeWeight(lineWidth());
 
-        const color = themeColor();
+        const color = lineColor();
         stroke(color);
 
         beginShape();
@@ -133,8 +138,10 @@ class Board {
         this.spaceObjs.forEach((s) => s.draw(this.gridAnimState));
 
         if (this.win) {
-            stroke('white');
             beginShape();
+            push()
+
+            stroke(lineColor(false));
 
             const pos = boxWidth * this.winLine + boxWidth / 2;
 
@@ -156,6 +163,7 @@ class Board {
                 }
             }
 
+            pop();
             endShape();
         }
 
@@ -282,7 +290,7 @@ class Board {
       this.size = size;
       this.pos = pos;
 
-      this.spaceObjs.forEach(e =>  e.boardSize = size);
+      this.spaceObjs.forEach(e =>  e.size = size / 3);
     }
 }
 

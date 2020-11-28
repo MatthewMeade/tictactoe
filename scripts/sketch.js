@@ -1,29 +1,50 @@
-const COLOR_STEP = 6;
 const TARGET_FPS = 30;
 
 const X_TURN = 1;
 const O_TURN = -1;
 
+const COLORS_LIGHT = ['f94144', 'f3722c', 'f8961e', 'f9844a', '90be6d', '43aa8b', '4d908e', '577590', '277da1'];
+const COLORS_DARK = ['03DAC6', 'ff241f', '0D80D9', '0DD951', 'BB86FC'];
+
+function curThemeColors(){
+    return COLOR_THEME === 0 ? COLORS_DARK : COLORS_LIGHT;
+}
+
+function setColorTheme(n){
+    COLOR_THEME = n || COLOR_THEME === 1 ? 0 : 1;
+    updateCurColor();
+}
+
+
 function setup() {
-    this.GM = new GameManager(); 
-    
-    colorMode(HSB);
+    this.GM = new GameManager();
+
+    colorMode(RGB);
     window.renderScale = 1;
-    updateBGColor(0);
-    
+    // updateCurColor();
+    this.curColor = COLORS_DARK.length - 1;
+
     this.canvas = createCanvas();
     windowResized();
-    
-    setTimeout(()=>adjustResolution(), 1000);
+
+    setTimeout(() => adjustResolution(), 1000);
 }
 
-function updateBGColor(h) {
-    // this.curHue = h ?? (this.curHue + 360 / COLOR_STEP) % 360;
-    this.curHue = h ?? Math.round(Math.random() * 365);
-    document.body.style.backgroundColor = color(curHue, 75, 90).toString()
+
+function updateCurColor() {
+    this.curColor = ((this.curColor ?? 0) + 1) % curThemeColors().length;
 }
 
-const BRIGHTNESS = 0;
+function curDynColor(alpha){
+    const theme = curThemeColors();
+    const c = color(`#${theme[this.curColor]}`);
+    if (alpha) {
+        c.setAlpha(200);
+    }
+    return c;
+}
+
+let COLOR_THEME = 0;
 
 function draw() {
     drawBG();
@@ -37,27 +58,31 @@ function draw() {
     if (frameCount % 200 === 0) adjustResolution();
 }
 
-function drawBG() {
-    if (BRIGHTNESS === 0) background(this.curHue, 50, 10);
-    if (BRIGHTNESS === 1) background(this.curHue, 75, 60);
-    if (BRIGHTNESS === 2) background(this.curHue, 25, 90);
+function lineWidth() {
+    return Math.min(width, height) / 50;
 }
 
-function themeColor() {
-    if (BRIGHTNESS === 0) return color(0, 0, 100, 0.8);
-    if (BRIGHTNESS === 1) return color(0, 0, 100, 0.8);
-    if (BRIGHTNESS === 2) return color(0, 0, 0, 0.8);
+function drawBG() {
+    if (COLOR_THEME === 0) background(25,25,25);
+    if (COLOR_THEME === 1) background(curDynColor());
+
+    document.body.style.backgroundColor = curDynColor().toString();
+}
+
+function lineColor(alpha) {
+    if (COLOR_THEME === 0) return curDynColor(alpha ?? true);
+    if (COLOR_THEME === 1) return color(255,255,255,200);
 }
 
 function debugText() {
-
     if (!this.showDebug) return;
 
     push();
     fill('white');
-    textSize(20)
+    textSize(20);
     text(`Scale: ${window.renderScale}\nFPS: ${frameRate()}`, 10, 20);
-    text(`Width: ${width}\nHeight: ${height}`, 10, 70)
+    text(`Width: ${width}\nHeight: ${height}`, 10, 70);
+    text(`Color: ${curDynColor().toString()} - ${curThemeColors()[this.curColor]}`, 10, 150);
     pop();
 }
 
@@ -65,14 +90,19 @@ function keyPressed() {
     if (key === 'd') {
         this.showDebug = !this.showDebug;
     }
+
+    if (key === 'b') {
+        setColorTheme();
+    }
+    if (key === ' ') {
+        updateCurColor();
+    }
 }
 
 function touchStarted() {
     this.GM.onClick();
-    updateBGColor();
     return false;
 }
-
 
 function windowResized() {
     const w = window.innerWidth * window.renderScale;
@@ -90,8 +120,7 @@ function adjustResolution() {
     const fps = Math.round(frameRate());
 
     if (fps <= TARGET_FPS && window.renderScale > SCALE_MIN) {
-        window.renderScale /= 2;    
+        window.renderScale /= 2;
         windowResized();
     }
-   
 }

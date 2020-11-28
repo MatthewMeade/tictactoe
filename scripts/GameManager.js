@@ -10,13 +10,17 @@ class GameManager {
         this.newBoard();
 
         this.difficulty = 1;
+
+        this.scores = {
+            [X_TURN]: 0,
+            [O_TURN]: 0,
+        }
+
     }
 
     onClick() {
         if (this.board.win) {
-            this.newBoard();
-
-            return;
+            return this.newBoard();
         }
         this.board.onClick(mouseX, mouseY);
     }
@@ -24,11 +28,7 @@ class GameManager {
     draw() {
         this.board.draw();
 
-        if (this.board.win && !this.newBoardTimeout) {
-            this.newBoardTimeout = setTimeout(() => {
-                this.newBoard();
-            }, 1000);
-        }
+        
     }
 
     newBoard() {
@@ -39,6 +39,7 @@ class GameManager {
 
         this.board.clickCB = this.onBoardClick.bind(this);
         this.board.moveCB = this.onBoardMove.bind(this);
+        this.board.winCB = this.onBoardWin.bind(this);
 
         resizeBoard(this.board);
 
@@ -62,12 +63,21 @@ class GameManager {
         this.board.makeMove(n);
     }
 
+    onBoardWin(winner) {
+        if (!this.newBoardTimeout) {
+            this.newBoardTimeout = setTimeout(() => {
+                updateCurColor();
+                this.newBoard();
+            }, 1000);
+        }
+        this.scores[winner]++;
+    }
+
     makeAiMove() {
         const { difficulty, board } = this;
 
         if (!board.spaces.some((s) => s === 0)) return;
 
-        updateBGColor();
 
         let move;
         if (difficulty === 0) move = randomMove(board);
