@@ -33,6 +33,10 @@ function setup() {
 
 function updateCurColor() {
     this.curColor = ((this.curColor ?? 0) + 1) % curThemeColors().length;
+
+    const bgColor = COLOR_THEME ? curDynColor() : color(25, 25, 25);
+    document.body.style.backgroundColor = bgColor.toString();
+
 }
 
 function curDynColor(alpha){
@@ -65,13 +69,11 @@ function lineWidth() {
 function drawBG() {
     if (COLOR_THEME === 0) background(25,25,25);
     if (COLOR_THEME === 1) background(curDynColor());
-
-    document.body.style.backgroundColor = curDynColor().toString();
 }
 
 function lineColor(alpha) {
     if (COLOR_THEME === 0) return curDynColor(alpha ?? true);
-    if (COLOR_THEME === 1) return color(255,255,255,200);
+    if (COLOR_THEME === 1) return color(255,255,255,alpha ? 200 : 255);
 }
 
 function debugText() {
@@ -94,8 +96,14 @@ function keyPressed() {
     if (key === 'b') {
         setColorTheme();
     }
+
     if (key === ' ') {
         updateCurColor();
+    }
+
+    if (key === 'f') {
+        fullscreen(!fullscreen());
+        windowResized();
     }
 }
 
