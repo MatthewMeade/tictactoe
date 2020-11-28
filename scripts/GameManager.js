@@ -4,7 +4,7 @@ class GameManager {
 
         this.isAi = {
             [X_TURN]: false,
-            [O_TURN]: true
+            [O_TURN]: false
         };
 
         this.newBoard();
@@ -40,8 +40,6 @@ class GameManager {
         this.board.clickCB = this.onBoardClick.bind(this);
         this.board.moveCB = this.onBoardMove.bind(this);
         this.board.winCB = this.onBoardWin.bind(this);
-
-        resizeBoard(this.board);
 
         if (this.isAi[this.board.turn]) {
             this.makeAiMove();

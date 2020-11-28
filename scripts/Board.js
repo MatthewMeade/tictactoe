@@ -1,69 +1,10 @@
-class TTC_SPACE {
-    constructor(index, size) {
-        this.index = index;
-        this.type = 0;
-        this.size = size;
+// TODO: Other board types? nxn || nxm(non square) ?
 
-        this.animScale = 0;
-    }
+class Board extends GameObject {
+    constructor() {
+        super({});
+        this.fitToScreen();
 
-    draw(gridAnimScale) {
-        if (this.type === 0) {
-            return;
-        }
-
-        const boxWidth = gridAnimScale * this.size;
-
-        const x = boxWidth * 0.5 + (this.index % 3) * boxWidth;
-        const y = boxWidth * 0.5 + Math.floor(this.index / 3) * boxWidth;
-
-        push();
-
-        noFill();
-        strokeWeight(lineWidth());
-        stroke(lineColor());
-        strokeJoin(ROUND);
-
-
-        if (this.type === X_TURN) {
-            const offset = ( boxWidth * 0.33) * this.animScale;
-            beginShape();
-
-            vertex(x - offset, y - offset);
-            vertex(x + offset, y + offset);
-            vertex(x, y);
-            vertex(x + offset, y - offset);
-            vertex(x - offset, y + offset);
-
-            endShape();
-        }
-
-        if (this.type === O_TURN) {
-            circle(x, y, this.animScale * boxWidth * 0.66);
-        }
-
-        pop();
-    }
-
-    setSpace(val) {
-        Animator.addAnimation(
-            {
-                from: 0,
-                to: 1,
-                time: 250
-            },
-            {update: (val) => (this.animScale = val)},
-            easeInOutBack
-        );
-
-        this.type = val;
-    }
-}
-
-class Board {
-    constructor(size=0, pos=0) {
-        this.size = size;
-        this.pos = pos;
         this.spaces = Array(9).fill(0);
 
         this.winLineAnimState = 0;
@@ -71,49 +12,42 @@ class Board {
 
         this.spaceObjs = [];
         for (let i = 0; i < 9; i++) {
-            this.spaceObjs[i] = new TTC_SPACE(i, size / 3);
+            this.spaceObjs[i] = new Board_Space(i, this.sizeX / 3);
+            this.spaceObjs[i].setSpace(this.spaces[i]);
         }
 
-        this.turn = X_TURN;
+        this.turn = X_TURN; // TODO: Support custom first turn
 
-        this.clickCB = () => console.log("No Callback defined for board click");
-        this.moveCB = () => console.log("No Callback defined for board move");
-        this.winCB = () => console.log("No Callback defined for board move");
+        this.clickCB = () => console.log('No Callback defined for board click');
+        this.moveCB = () => console.log('No Callback defined for board move');
+        this.winCB = () => console.log('No Callback defined for board move');
 
+        this.animateProperty({ time: 500, propKey: 'gridAnimState', curve: easeInOutBack});
 
-        Animator.addAnimation(
-            {
-                from: 0,
-                to: 1,
-                time: 500
-            },
-            {update: (val) => (this.gridAnimState = val)},
-            easeInOutBack
-        );
+        this.wins = [];
     }
 
-    draw() {
-        push();
+    _draw() {
+        const boxWidth = (this.gridAnimState * this.sizeX) / 3;
 
-        const boxWidth = (this.gridAnimState * this.size) / 3;
+        this.positionSpaces();
+
+        // console.log(this.gridAnimState)
 
         noFill();
         strokeJoin(ROUND);
 
-        const { pos, size } = this;
-        const { x, y } = pos;
-
-        const _x = x + (size / 2) * (1 - this.gridAnimState);
-        const _y = y + (size / 2) * (1 - this.gridAnimState);
-
+        // TODO: Support scaling in GameObject
+        const _x = (this.sizeX / 2) * (1 - this.gridAnimState);
+        const _y = (this.sizeY / 2) * (1 - this.gridAnimState);
         translate(_x, _y);
-
 
         strokeWeight(lineWidth());
 
         const color = lineColor();
         stroke(color);
 
+        // TODO: Refactor drawing these shapes
         beginShape();
 
         vertex(0, boxWidth);
@@ -135,54 +69,57 @@ class Board {
 
         endShape();
 
+        // TODO: Pass in scale some other way than as an argument to draw. p5 scale() ?
         this.spaceObjs.forEach((s) => s.draw(this.gridAnimState));
 
-        if (this.win) {
-            beginShape();
-            push()
+        // TODO: Draw one win line at a time
+        if (this.wins.length > 0) {
+            this.wins.forEach((win) => {
+                push();
 
-            stroke(lineColor(false));
+                stroke(lineColor(false));
 
-            const pos = boxWidth * this.winLine + boxWidth / 2;
+                const pos = boxWidth * win.line + boxWidth / 2;
+                const len = this.sizeX * this.winLineAnimState;
 
-            const len = this.size * this.winLineAnimState;
-
-            if (this.winType === 'ROW') {
-                line(0, pos, len, pos);
-            }
-
-            if (this.winType === 'COL') {
-                line(pos, 0, pos, len);
-            }
-
-            if (this.winType === 'DIAG') {
-                if (this.winLine === 0) {
-                    line(0, 0, len, len);
-                } else {
-                    line(0, this.size, len, this.size * (1 - this.winLineAnimState));
+                if (win.type === 'ROW') {
+                    line(0, pos, len, pos);
                 }
-            }
 
-            pop();
-            endShape();
+                if (win.type === 'COL') {
+                    line(pos, 0, pos, len);
+                }
+
+                if (win.type === 'DIAG') {
+                    if (win.line === 0) {
+                        line(0, 0, len, len);
+                    } else {
+                        line(0, this.sizeX, len, this.sizeX * (1 - this.winLineAnimState));
+                    }
+                }
+
+                pop();
+            });
         }
-
-        pop();
     }
 
-    onClick(x, y) {
-        if (this.win) {
+    positionSpaces(){
+        const boxWidth = (this.sizeX * this.gridAnimState) / 3;        
+
+        for (let i = 0; i < this.spaceObjs.length; i++) {
+            const posX = boxWidth * (i % 3);
+            const posY = boxWidth * Math.floor(i / 3);
+
+            this.spaceObjs[i].updateDimensions({posX, posY, sizeX: boxWidth, sizeY: boxWidth});
+        }
+    }
+
+    _onClick(x, y) {
+        if (this.wins.length !== 0) {
             return;
         }
 
-        x -= this.pos.x;
-        y -= this.pos.y;
-
-        if (x < 0 || y < 0 || x > this.size || y > this.size) {
-            return;
-        }
-
-        const boxWidth = this.size / 3;
+        const boxWidth = this.sizeX / 3;
 
         const col = Math.floor(x / boxWidth);
         const row = Math.floor(y / boxWidth);
@@ -195,6 +132,10 @@ class Board {
     }
 
     makeMove(n) {
+        if (this.wins.length !== 0) {
+            return;
+        }
+
         this.spaces[n] = this.turn;
         this.spaceObjs[n].setSpace(this.turn);
         this.turn *= O_TURN;
@@ -204,14 +145,16 @@ class Board {
         this.moveCB(this.turn);
     }
 
-    static CheckWin(board){
+    static CheckWin(board) {
+        // TODO: Support checking boards other than 3x3
+
         const rowSums = [0, 0, 0]; // y = row
         const colSums = [0, 0, 0]; // x = col
         const diagSums = [0, 0, 0];
 
-        const {spaces} = board;
+        const { spaces } = board;
 
-        let win, winType, winLine;
+        const wins = [];
 
         for (let x = 0; x < 3; x++) {
             for (let y = 0; y < 3; y++) {
@@ -233,64 +176,69 @@ class Board {
 
         for (let i = 0; i < 3; i++) {
             if (Math.abs(rowSums[i]) === 3) {
-                win = rowSums[i];
-                winType = 'ROW';
-                winLine = i;
+                wins.push({
+                    type: 'ROW',
+                    line: i,
+                    player: rowSums[i] / 3
+                });
             }
 
             if (Math.abs(colSums[i]) === 3) {
-                win = colSums[i];
-                winType = 'COL';
-                winLine = i;
+                wins.push({
+                    type: 'COL',
+                    line: i,
+                    player: colSums[i] / 3
+                });
             }
 
             if (Math.abs(diagSums[i]) === 3) {
-                win = diagSums[i];
-                winType = 'DIAG';
-                winLine = i;
+                wins.push({
+                    type: 'DIAG',
+                    line: i,
+                    player: diagSums[i] / 3
+                });
             }
         }
 
-        if (win) {
-            win /= 3;
-        } else if (!spaces.some((n) => n === 0)) {
-            win = 2;
-            winType = 'TIE';
+        if (!spaces.some((n) => n === 0)) {
+            wins.push({
+                type: 'TIE',
+                line: 0,
+                player: 0
+            });
         }
 
-        return {win, winType, winLine};
+        return wins;
     }
 
     checkForWin() {
-         const {win, winType, winLine} = Board.CheckWin(this);
+        this.wins = Board.CheckWin(this);
 
-         this.win = win;
-         this.winType = winType;
-         this.winLine = winLine; 
+        if (this.wins.length > 0) {
+            this.animateProperty({
+                time: 200, // TODO: Draw lines one at a time?
+                propKey: 'winLineAnimState'
+            });
+            this.winCB(this.wins);
+        }
 
-         if (this.win) {
-            Animator.addAnimation(
-                {
-                    from: 0,
-                    to: 1,
-                    time: 250
-                },
-                {update: (val) => (this.winLineAnimState = val)}
-            );
-         }
-
-         if (this.win) {
-             this.winCB(this.win);
-         }
-
-         return this.win;
+        return this.wins;
     }
 
-    updateDims(size, pos) {
-      this.size = size;
-      this.pos = pos;
+    _updateDimensions() {
+        if (!this.spaceObjs) {
+            return;
+        }
 
-      this.spaceObjs.forEach(e =>  e.size = size / 3);
+        this.positionSpaces();
+    }
+
+    fitToScreen() {
+        const w = window.innerWidth * window.renderScale;
+        const h = window.innerHeight * window.renderScale;
+        const { size, pos } = boardSize(w, h);
+
+        this.updateDimensions({ sizeX: size , sizeY: size, pos });
     }
 }
 
@@ -305,10 +253,54 @@ function boardSize(w, h) {
     };
 }
 
-function resizeBoard(board) {
-    const w = window.innerWidth * window.renderScale;
-    const h = window.innerHeight * window.renderScale;
-    const { size, pos } = boardSize(w, h);
+class Board_Space extends GameObject {
+    constructor({posX, posY, size}) {
+        super({posX, posY, sizeX: size, sizeY: size});
+        this.animScale = 0;
+    }
 
-    board.updateDims(size, pos);
+    _updateDimensions({sizeX}){
+
+    }
+
+    _draw() {
+        noFill();
+        noFill();
+        strokeWeight(lineWidth());
+        stroke(lineColor());
+        strokeJoin(ROUND);
+
+
+        const width = this.sizeX;
+        const x = width / 2;
+        const y = width / 2;
+
+
+        if (this.type === X_TURN) {
+            const offset = (width * 0.33) * this.animScale;
+            beginShape();
+
+            vertex(x - offset, y - offset);
+            vertex(x + offset, y + offset);
+            vertex(x, y);
+            vertex(x + offset, y - offset);
+            vertex(x - offset, y + offset);
+
+            endShape();
+        }
+
+        if (this.type === O_TURN) {
+            circle(x, y, this.animScale * width * 0.66);
+        }
+    }
+
+    setSpace(val) {
+        this.animateProperty({
+            time: 250,
+            propKey: 'animScale',
+            curve: easeInOutBack
+        })
+
+        this.type = val;
+    }
 }

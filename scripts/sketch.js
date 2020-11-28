@@ -17,10 +17,10 @@ function setColorTheme(n){
 
 
 function setup() {
+    window.renderScale = 1;
     this.GM = new GameManager();
 
     colorMode(RGB);
-    window.renderScale = 1;
     // updateCurColor();
     this.curColor = COLORS_DARK.length - 1;
 
@@ -112,7 +112,9 @@ function windowResized() {
     this.canvas.elt.style.width = '100vw';
     this.canvas.elt.style.height = '100vh';
 
-    resizeBoard(this.GM.board);
+    this.GM.board.fitToScreen();
+
+    // resizeBoard(this.GM.board);
 }
 
 const SCALE_MIN = 0.1;

@@ -1,3 +1,11 @@
+// TODO: Game Object Manager?
+//       - Call draw on all game objects
+//       - Fire events
+
+// TODO: Support Scaling
+
+// TODO: Onclick
+
 class GameObject {
     constructor({ pos, size, posX, posY, sizeX, sizeY }) {
         this.updateDimensions({
@@ -13,12 +21,18 @@ class GameObject {
     _draw() {
         console.log('_draw method not implemented');
     }
+    _onClick() {
+        console.log('_onClick method not implemented');
+    }
+    _updateDimensions() {
+        console.log('_updateDimensions method not implemented');
+    }
 
-    draw() {
+    draw(...args) {
         push();
         translate(this.posX, this.posY);
 
-        this._draw();
+        this._draw(...args);
 
         pop();
     }
@@ -32,10 +46,12 @@ class GameObject {
             sizeX = size.x;
             sizeY = size.y;
         }
-        this.posX = this.posX ?? posX;
-        this.posY = this.posY ?? posY;
-        this.sizeX = this.sizeX ?? sizeX;
-        this.sizeY = this.sizeY ?? sizeY;
+        this.posX = posX ?? this.posX;
+        this.posY = posY ?? this.posY;
+        this.sizeX = sizeX ?? this.sizeX;
+        this.sizeY = sizeY ?? this.sizeY;
+
+        this._updateDimensions({posX, posY, sizeX, sizeY});
     }
 
     _updatePropCB(key) {
@@ -44,11 +60,11 @@ class GameObject {
         };
     }
 
-    async animateProperty({ wait, from, to, time, propKey, done, update }) {
+    async animateProperty({ wait, from, to, time, propKey, done, update, curve }) {
         if (wait) {
             return this.startTimer({
                 time: wait,
-                done: () => this.animateProperty({ from, to, time, propKey, done, update })
+                done: () => this.animateProperty({ from, to, time, propKey, done, update, curve })
             });
         }
 
@@ -59,7 +75,7 @@ class GameObject {
             {
                 update: update ?? defaultCB,
                 done: done ?? defaultCB
-            }
+            }, curve
         );
     }
 
@@ -70,6 +86,18 @@ class GameObject {
                 done: done ?? (() => this._updatePropCB(propKey)(val))
             }
         );
+    }
+
+    onClick(x, y) {
+        // TODO: Support Scale
+        x -= this.posX;
+        y -= this.posY;
+        
+        if (x < 0 || y < 0 || x > this.size || y > this.size) {
+            return; // Clicked outside
+        }
+
+        this._onClick(x, y);
     }
 }
 

@@ -18,16 +18,14 @@ function randomAvoidLosing(board) {
         const newSpaces = [...board.spaces];
 
         newSpaces[i] = curTurn;
-        const { win } = Board.CheckWin({ spaces: newSpaces });
-
-        if (win) {
+        const wins = Board.CheckWin({ spaces: newSpaces });
+        if (wins[0]) {
             return i;
         }
 
         newSpaces[i] = curTurn * -1;
-        const { win: lose } = Board.CheckWin({ spaces: newSpaces });
-
-        if (lose) {
+        const loses = Board.CheckWin({ spaces: newSpaces });
+        if (loses[0]) {
             stopWinIndex = i;
         }
     }
@@ -64,11 +62,12 @@ function findBestMove(board) {
 }
 
 function minimax(spaces, depth, isMax, maxPlayer) {
-    const { win } = Board.CheckWin({ spaces });
+    const wins = Board.CheckWin(spaces);
+    const win = wins[0];
 
-    if (win === maxPlayer) return 1;
-    if (win === 2) return 0;
-    if (win) return -1;
+    if (win.player === maxPlayer) return 1;
+    if (win.type === 'TIE') return 0;
+    if (!win) return -1;
 
     const curPlayer = isMax ? maxPlayer : maxPlayer * -1;
 
