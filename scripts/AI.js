@@ -62,12 +62,12 @@ function findBestMove(board) {
 }
 
 function minimax(spaces, depth, isMax, maxPlayer) {
-    const wins = Board.CheckWin(spaces);
+    const wins = Board.CheckWin({spaces});
     const win = wins[0];
 
-    if (win.player === maxPlayer) return 1;
-    if (win.type === 'TIE') return 0;
-    if (!win) return -1;
+    if (win?.player === maxPlayer) return 1;
+    if (win?.player === maxPlayer * -1) return -1;
+    if (win?.player === 0) return 0;
 
     const curPlayer = isMax ? maxPlayer : maxPlayer * -1;
 

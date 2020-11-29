@@ -41,7 +41,7 @@ class GameManager {
         this.board.winCB = this.onBoardWin.bind(this);
 
         if (this.isAi[this.board.turn]) {
-            this.makeAiMove();
+            setTimeout(this.makeAiMove.bind(this), 250);
         }
 
     }
