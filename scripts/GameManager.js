@@ -22,19 +22,18 @@ class GameManager {
         if (this.board.win) {
             return this.newBoard();
         }
-        this.board.onClick(mouseX, mouseY);
+        // this.board.onClick(mouseX, mouseY);
     }
 
     draw() {
-        this.board.draw();
-
-        
+        // this.board.draw();
     }
 
     newBoard() {
         clearTimeout(this.newBoardTimeout);
         this.newBoardTimeout = null;
 
+        this.board?.destroy();
         this.board = new Board();
 
         this.board.clickCB = this.onBoardClick.bind(this);

@@ -7,7 +7,7 @@
 // TODO: Onclick
 
 class GameObject {
-    constructor({ pos, size, posX, posY, sizeX, sizeY }) {
+    constructor({ pos, size, posX, posY, sizeX, sizeY}) {
         this.updateDimensions({
             pos,
             size,
@@ -16,6 +16,39 @@ class GameObject {
             sizeX: sizeX ?? 0,
             sizeY: sizeY ?? 0
         });
+
+        this.parent = parent || {posX: 0, posY: 0};
+
+        this.children = new Set();
+        this.parent = null;
+
+        GameObjectManager.addObject(this);
+    }
+
+    addChildren(c) {
+        this.addChild(c);
+    }
+
+    addChild(child) {
+        if (Array.isArray(child)) {
+            return child.forEach(c => this.addChild(c))
+        }
+
+        this.children.add(child);
+        child.parent = this;
+    }
+
+    removeChildren(c) {
+        this.removeChild(c);
+    }
+
+    removeChild(child) {
+        if (Array.isArray(child)) {
+            return child.forEach(c => this.removeChild(c))
+        }
+
+        this.children.delete(child);
+        child.destroy(); // DESTORY THE CHILD
     }
 
     _draw() {
@@ -27,14 +60,30 @@ class GameObject {
     _updateDimensions() {
         console.log('_updateDimensions method not implemented');
     }
-
+    _destroy() {
+        console.log('_destory method not implemented');
+    }
+    
     draw(...args) {
         push();
-        translate(this.posX, this.posY);
+        const {x, y} = this.getParentOffset();
+        translate(x, y);
 
         this._draw(...args);
 
         pop();
+    }
+
+
+    getParentOffset(){
+        let cur = this;
+        let x = this.posX; let y = this.posY;
+        while(cur.parent) {
+            x += cur.parent.posX;
+            y += cur.parent.posY;
+            cur = cur.parent;
+        }
+        return {x, y};
     }
 
     updateDimensions({ pos, size, posX, posY, sizeX, sizeY }) {
@@ -89,76 +138,23 @@ class GameObject {
     }
 
     onClick(x, y) {
-        // TODO: Support Scale
-        x -= this.posX;
-        y -= this.posY;
+        const {x: _x, y: _y} = this.getParentOffset();
+
+        x -= _x;
+        y -= _y;
         
-        if (x < 0 || y < 0 || x > this.size || y > this.size) {
+        if (x < 0 || y < 0 || x > this.sizeX || y > this.sizeY) {
             return; // Clicked outside
         }
 
         this._onClick(x, y);
     }
-}
 
-class ExChild extends GameObject {
-    async fancyAnimation() {
+    destroy(){
+        GameObjectManager.removeObject(this);
 
-        console.log("Start")
-
-        this.animateProperty({
-            from: 10,
-            to: 1000,
-            time: 3000,
-            propKey: 'sizeY',
-            done: () => (this.color = color('green'))
-        });
-
-        console.log("One")
+        this.removeChildren([...this.children]);
         
-        await this.animateProperty({
-            from: 0,
-            to: 500,
-            time: 1000,
-            propKey: 'posX'
-        });
-        console.log("Two")
-        
-        this.animateProperty({
-            from: 0,
-            to: 500,
-            time: 1000,
-            propKey: 'posY'
-        });
-        console.log("Three")
-        
-        await this.animateProperty({
-            from: 10,
-            to: 1000,
-            time: 1000,
-            propKey: 'sizeX',
-            done: () => (this.color = color('blue'))
-        });
-        console.log("Four")
-
-        await this.startTimer({
-            time: 4000,
-            propKey: 'color',
-            val: color('Red')
-        });
-    }
-
-    constructor({ pos, size }) {
-        super({ pos, size });
-
-        this.color = color('white');
-
-        this.fancyAnimation();
-    }
-
-    _draw() {
-        fill(this.color);
-
-        ellipse(this.posX, this.posY, this.sizeX, this.sizeY);
+        this._destroy();
     }
 }

@@ -3,19 +3,21 @@ function easeInOutBack(x) {
     const c3 = c1 + 1;
     return 1 + c3 * pow(x - 1, 3) + c1 * pow(x - 1, 2);
 }
+
+// TODO: Infinite Loop?
 class Animator {
     static animations = [];
 
     static addAnimation(def, callbacks, curve) {
         return new Promise((resolveP, reject) => {
-            Animator.animations.push({ def, startTime: Date.now(), callbacks, curve, resolveP });
+            this.animations.push({ def, startTime: Date.now(), callbacks, curve, resolveP });
         });
     }
 
     static update() {
         const now = Date.now();
 
-        const currentAnims = Animator.animations;
+        const currentAnims = this.animations;
         const updatedAnims = [];
         for (let i = 0; i < currentAnims.length; i++) {
             const { def, startTime, callbacks, curve, resolveP } = currentAnims[i];
@@ -45,10 +47,10 @@ class Animator {
             }
         }
 
-        Animator.animations = updatedAnims;
+        this.animations = updatedAnims;
     }
 
     clearAnimations() {
-        Animator.animations = [];
+        this.animations = [];
     }
 }

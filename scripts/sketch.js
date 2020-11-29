@@ -54,8 +54,8 @@ function draw() {
     drawBG();
 
     Animator.update();
-
-    this.GM.draw();
+    GameObjectManager.draw();
+    
 
     debugText();
 
@@ -108,7 +108,7 @@ function keyPressed() {
 }
 
 function touchStarted() {
-    this.GM.onClick();
+    GameObjectManager.onClick();
     return false;
 }
 

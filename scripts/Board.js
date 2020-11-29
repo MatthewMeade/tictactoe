@@ -6,15 +6,13 @@ class Board extends GameObject {
         this.fitToScreen();
 
         this.spaces = Array(9).fill(0);
-
-        this.winLineAnimState = 0;
-        this.gridAnimState = 0;
-
         this.spaceObjs = [];
         for (let i = 0; i < 9; i++) {
-            this.spaceObjs[i] = new Board_Space(i, this.sizeX / 3);
+            this.spaceObjs[i] = new Board_Space({}, i);
             this.spaceObjs[i].setSpace(this.spaces[i]);
         }
+        this.addChildren(this.spaceObjs);
+        this.positionSpaces();
 
         this.turn = X_TURN; // TODO: Support custom first turn
 
@@ -22,17 +20,23 @@ class Board extends GameObject {
         this.moveCB = () => console.log('No Callback defined for board move');
         this.winCB = () => console.log('No Callback defined for board move');
 
-        this.animateProperty({ time: 500, propKey: 'gridAnimState', curve: easeInOutBack});
+        this.animateProperty({
+            time: 500,
+            propKey: 'gridAnimState',
+            curve: easeInOutBack,
+            update: (n) => {
+                this.gridAnimState = n;
+                this.positionSpaces();
+            }
+        });
 
         this.wins = [];
+        this.winLineAnimState = 0;
+        this.gridAnimState = 0;
     }
 
     _draw() {
         const boxWidth = (this.gridAnimState * this.sizeX) / 3;
-
-        this.positionSpaces();
-
-        // console.log(this.gridAnimState)
 
         noFill();
         strokeJoin(ROUND);
@@ -70,7 +74,7 @@ class Board extends GameObject {
         endShape();
 
         // TODO: Pass in scale some other way than as an argument to draw. p5 scale() ?
-        this.spaceObjs.forEach((s) => s.draw(this.gridAnimState));
+        // this.spaceObjs.forEach((s) => s.draw(this.gridAnimState));
 
         // TODO: Draw one win line at a time
         if (this.wins.length > 0) {
@@ -103,14 +107,18 @@ class Board extends GameObject {
         }
     }
 
-    positionSpaces(){
-        const boxWidth = (this.sizeX * this.gridAnimState) / 3;        
+    positionSpaces() {
+        const curSize = this.sizeX * this.gridAnimState;
+        const boxWidth = curSize / 3;
+
+        const offsetX = (this.sizeX - curSize) / 2;
+        const offsetY = (this.sizeY - curSize) / 2;
 
         for (let i = 0; i < this.spaceObjs.length; i++) {
-            const posX = boxWidth * (i % 3);
-            const posY = boxWidth * Math.floor(i / 3);
+            const posX = offsetX + boxWidth * (i % 3);
+            const posY = offsetY + boxWidth * Math.floor(i / 3);
 
-            this.spaceObjs[i].updateDimensions({posX, posY, sizeX: boxWidth, sizeY: boxWidth});
+            this.spaceObjs[i].updateDimensions({ posX, posY, sizeX: boxWidth, sizeY: boxWidth });
         }
     }
 
@@ -234,16 +242,14 @@ class Board extends GameObject {
     }
 
     fitToScreen() {
-        const w = window.innerWidth * window.renderScale;
-        const h = window.innerHeight * window.renderScale;
-        const { size, pos } = boardSize(w, h);
+        const { size, pos } = boardSize();
 
-        this.updateDimensions({ sizeX: size , sizeY: size, pos });
+        this.updateDimensions({ sizeX: size, sizeY: size, pos });
     }
 }
 
-function boardSize(w, h) {
-    const size = Math.min(w, h) * 0.66;
+function boardSize() {
+    const size = Math.min(width, height) * 0.66;
     return {
         size,
         pos: {
@@ -254,14 +260,13 @@ function boardSize(w, h) {
 }
 
 class Board_Space extends GameObject {
-    constructor({posX, posY, size}) {
-        super({posX, posY, sizeX: size, sizeY: size});
+    constructor({ posX, posY, size }, index) {
+        super({ posX, posY, sizeX: size, sizeY: size });
         this.animScale = 0;
+        this.index = index;
     }
 
-    _updateDimensions({sizeX}){
-
-    }
+    _updateDimensions({ sizeX }) {}
 
     _draw() {
         noFill();
@@ -270,14 +275,12 @@ class Board_Space extends GameObject {
         stroke(lineColor());
         strokeJoin(ROUND);
 
-
         const width = this.sizeX;
         const x = width / 2;
         const y = width / 2;
 
-
         if (this.type === X_TURN) {
-            const offset = (width * 0.33) * this.animScale;
+            const offset = width * 0.33 * this.animScale;
             beginShape();
 
             vertex(x - offset, y - offset);
@@ -299,8 +302,12 @@ class Board_Space extends GameObject {
             time: 250,
             propKey: 'animScale',
             curve: easeInOutBack
-        })
+        });
 
         this.type = val;
+    }
+
+    _onClick() {
+        console.log(`Clicked Space ${this.index}`);
     }
 }
