@@ -18,7 +18,7 @@ class GameManager {
 
         this.diffButton = new DifficultyButton({
             values: ["EASY", "MEDIUM", "IMPOSSIBLE"],
-            curValue: 0,
+            curValue: this.difficulty,
             clickCB: (n) => this.difficulty = n,
             pos: {x: 15, y: 15},
             // size: {x: width, y: height}
