@@ -4,7 +4,7 @@ class GameManager {
 
         this.isAi = {
             [X_TURN]: false,
-            [O_TURN]: false
+            [O_TURN]: true
         };
 
         this.newBoard();
@@ -16,6 +16,19 @@ class GameManager {
             [O_TURN]: 0,
         }
 
+        this.diffButton = new DifficultyButton({
+            values: ["EASY", "MEDIUM", "IMPOSSIBLE"],
+            curValue: 0,
+            clickCB: (n) => this.difficulty = n,
+            pos: {x: 15, y: 15},
+            // size: {x: width, y: height}
+        });
+
+    }
+
+    updateDimensions() {
+        this.board.fitToScreen();
+        this.diffButton.updateSize();
     }
 
     onClick() {

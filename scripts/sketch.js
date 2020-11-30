@@ -4,7 +4,7 @@ const X_TURN = 1;
 const O_TURN = -1;
 
 const COLORS_LIGHT = ['f94144', 'f3722c', 'f8961e', 'f9844a', '90be6d', '43aa8b', '4d908e', '577590', '277da1'];
-const COLORS_DARK = ['03DAC6', 'ff241f', '0D80D9', '0DD951', 'BB86FC'];
+const COLORS_DARK = ['03DAC6', 'FF073A ', '0D80D9', '0DD951', 'BB86FC', 'ffe700'];
 
 function curThemeColors() {
     return COLOR_THEME === 0 ? COLORS_DARK : COLORS_LIGHT;
@@ -17,16 +17,17 @@ function setColorTheme(n) {
 
 function setup() {
     window.renderScale = 1;
-    this.GM = new GameManager();
-
+    
     colorMode(RGB);
     // updateCurColor();
     this.curColor = COLORS_DARK.length - 1;
 
+    this.GM = new GameManager();
+    
     this.canvas = createCanvas();
     windowResized();
-
-    setTimeout(() => adjustResolution(), 1000);
+    
+    // setTimeout(() => adjustResolution(), 1000);
 }
 
 function updateCurColor() {
@@ -70,7 +71,6 @@ function draw() {
     // textFont('Impact');
     // text('EASY', width - 10, height);
 
-    // textFont(font);
 
     
     // textAlign(LEFT, BOTTOM);
@@ -80,14 +80,14 @@ function draw() {
 
     pop();
     
-    // debugText();
+    debugText();
 
 
     if (frameCount % 200 === 0) adjustResolution();
 }
 
-function lineWidth() {
-    return Math.min(width, height) / 50;
+function lineWidth(scale = 1) {
+    return scale * Math.min(width, height) / 50;
 }
 
 function drawBG() {
@@ -158,7 +158,7 @@ function windowResized() {
     this.canvas.elt.style.width = '100vw';
     this.canvas.elt.style.height = '100vh';
 
-    this.GM.board.fitToScreen();
+    this.GM.updateDimensions();
 
     // resizeBoard(this.GM.board);
 }

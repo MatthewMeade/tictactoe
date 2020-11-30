@@ -18,7 +18,6 @@ class GameObjectManager {
     }
 
     static mouseMoved() {
-
         this.objects.forEach(obj => obj.mouseMoved(mouseX, mouseY));
     }
 }
