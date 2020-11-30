@@ -95,12 +95,13 @@ class ScoreBoard {
         strokeJoin(ROUND);
         strokeWeight(r);
         noFill();
-        stroke(0, 0, 100, 0.8);
+        stroke(lineColor())
         translate(150, 15);
 
         const points = numMap[this.curNum];
 
         if (this.progress <= 0) {
+            pop();
             return;
         }
 

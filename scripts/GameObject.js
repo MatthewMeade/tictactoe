@@ -22,6 +22,8 @@ class GameObject {
         this.children = new Set();
         this.parent = null;
 
+        this.mouseHovering = false;
+
         GameObjectManager.addObject(this);
     }
 
@@ -50,26 +52,13 @@ class GameObject {
         this.children.delete(child);
         child.destroy(); // DESTORY THE CHILD
     }
-
-    _draw() {
-        console.log('_draw method not implemented');
-    }
-    _onClick() {
-        console.log('_onClick method not implemented');
-    }
-    _updateDimensions() {
-        console.log('_updateDimensions method not implemented');
-    }
-    _destroy() {
-        console.log('_destory method not implemented');
-    }
     
     draw(...args) {
         push();
         const {x, y} = this.getParentOffset();
         translate(x, y);
 
-        this._draw(...args);
+        this._draw?.(...args);
 
         pop();
     }
@@ -100,7 +89,7 @@ class GameObject {
         this.sizeX = sizeX ?? this.sizeX;
         this.sizeY = sizeY ?? this.sizeY;
 
-        this._updateDimensions({posX, posY, sizeX, sizeY});
+        this._updateDimensions?.({posX, posY, sizeX, sizeY});
     }
 
     _updatePropCB(key) {
@@ -117,7 +106,7 @@ class GameObject {
             });
         }
 
-        const defaultCB = this._updatePropCB(propKey);
+        const defaultCB = this._updatePropCB?.(propKey);
 
         await Animator.addAnimation(
             { from, to, time },
@@ -132,7 +121,7 @@ class GameObject {
         await Animator.addAnimation(
             { time },
             {
-                done: done ?? (() => this._updatePropCB(propKey)(val))
+                done: done ?? (() => this._updatePropCB?.(propKey)(val))
             }
         );
     }
@@ -147,7 +136,7 @@ class GameObject {
             return; // Clicked outside
         }
 
-        this._onClick(x, y);
+        this._onClick?.(x, y);
     }
 
     destroy(){
@@ -155,6 +144,38 @@ class GameObject {
 
         this.removeChildren([...this.children]);
         
-        this._destroy();
+        this._destroy?.();
+    }
+
+    pointIsInside(mx, my) {
+        
+        const {x, y} = this.getParentOffset();
+
+        return mx >= x && mx <= (x + this.sizeX) &&
+               my >= y && my <= (y + this.sizeY)
+    }
+
+    onMouseEnter(x, y) {
+        this._onMouseEnter?.(x, y);
+    }
+
+    onMouseLeave(x, y) {
+        this._onMouseLeave?.(x, y);
+    }
+
+    mouseMoved(x, y) {
+        const isCurInside = this.pointIsInside(x, y);
+
+        if (isCurInside === this.mouseHovering) {
+            return this._mouseMoved?.(x, y);
+        }
+
+        this.mouseHovering = isCurInside;
+
+        if (isCurInside) {
+            this.onMouseEnter(x, y);
+        } else {
+            this.onMouseLeave(x, y);
+        }
     }
 }

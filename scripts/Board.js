@@ -5,6 +5,8 @@ class Board extends GameObject {
         super({});
         this.fitToScreen();
 
+        this.turn = X_TURN; // TODO: Support custom first turn
+
         this.spaces = Array(9).fill(0);
         this.spaceObjs = [];
         for (let i = 0; i < 9; i++) {
@@ -13,8 +15,9 @@ class Board extends GameObject {
         }
         this.addChildren(this.spaceObjs);
         this.positionSpaces();
+        this.spaceObjs.forEach(o => o.curTurn = this.turn);
 
-        this.turn = X_TURN; // TODO: Support custom first turn
+
 
         this.clickCB = () => console.log('No Callback defined for board click');
         this.moveCB = () => console.log('No Callback defined for board move');
@@ -146,7 +149,9 @@ class Board extends GameObject {
 
         this.spaces[n] = this.turn;
         this.spaceObjs[n].setSpace(this.turn);
-        this.turn *= O_TURN;
+        this.turn *= -1;
+
+        this.spaceObjs.forEach(o => o.curTurn = this.turn);
 
         this.checkForWin();
 
@@ -264,15 +269,23 @@ class Board_Space extends GameObject {
         super({ posX, posY, sizeX: size, sizeY: size });
         this.animScale = 0;
         this.index = index;
+
+        this.valueSet = false;
+        this.curTurn = 0;
     }
 
-    _updateDimensions({ sizeX }) {}
+    _updateDimensions() {}
 
     _draw() {
         noFill();
         noFill();
         strokeWeight(lineWidth());
-        stroke(lineColor());
+
+        const lc = lineColor();
+        if (!this.valueSet) {
+            lc.setAlpha(25)
+        }
+        stroke(lc);
         strokeJoin(ROUND);
 
         const width = this.sizeX;
@@ -297,13 +310,34 @@ class Board_Space extends GameObject {
         }
     }
 
-    setSpace(val) {
+    _onMouseEnter(){
+        if (!this.valueSet) {
+            this.showSpacePreview(this.curTurn);
+        }
+    }
+    
+    _onMouseLeave() {
+        if (!this.valueSet) {
+            this.showSpacePreview(0);
+        }
+    }
+
+    showSpacePreview(val) {
+        this.type = val;
         this.animateProperty({
             time: 250,
             propKey: 'animScale',
             curve: easeInOutBack
         });
+    }
 
+    setSpace(val) {
+        this.valueSet = val !== 0;
+        this.animateProperty({
+            time: 250,
+            propKey: 'animScale',
+            curve: easeInOutBack
+        });
         this.type = val;
     }
 

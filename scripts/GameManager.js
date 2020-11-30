@@ -4,7 +4,7 @@ class GameManager {
 
         this.isAi = {
             [X_TURN]: false,
-            [O_TURN]: true
+            [O_TURN]: false
         };
 
         this.newBoard();
@@ -22,11 +22,10 @@ class GameManager {
         if (this.board.win) {
             return this.newBoard();
         }
-        // this.board.onClick(mouseX, mouseY);
     }
 
     draw() {
-        // this.board.draw();
+
     }
 
     newBoard() {

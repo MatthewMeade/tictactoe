@@ -6,15 +6,14 @@ const O_TURN = -1;
 const COLORS_LIGHT = ['f94144', 'f3722c', 'f8961e', 'f9844a', '90be6d', '43aa8b', '4d908e', '577590', '277da1'];
 const COLORS_DARK = ['03DAC6', 'ff241f', '0D80D9', '0DD951', 'BB86FC'];
 
-function curThemeColors(){
+function curThemeColors() {
     return COLOR_THEME === 0 ? COLORS_DARK : COLORS_LIGHT;
 }
 
-function setColorTheme(n){
+function setColorTheme(n) {
     COLOR_THEME = n || COLOR_THEME === 1 ? 0 : 1;
     updateCurColor();
 }
-
 
 function setup() {
     window.renderScale = 1;
@@ -30,22 +29,25 @@ function setup() {
     setTimeout(() => adjustResolution(), 1000);
 }
 
-
 function updateCurColor() {
     this.curColor = ((this.curColor ?? 0) + 1) % curThemeColors().length;
 
     const bgColor = COLOR_THEME ? curDynColor() : color(25, 25, 25);
     document.body.style.backgroundColor = bgColor.toString();
-
 }
 
-function curDynColor(alpha){
+function curDynColor(alpha) {
     const theme = curThemeColors();
     const c = color(`#${theme[this.curColor]}`);
     if (alpha) {
         c.setAlpha(200);
     }
     return c;
+}
+
+function curBGColor(){
+    if (COLOR_THEME === 0) return color(25, 25, 25);
+    if (COLOR_THEME === 1) return curDynColor();
 }
 
 let COLOR_THEME = 0;
@@ -55,9 +57,31 @@ function draw() {
 
     Animator.update();
     GameObjectManager.draw();
-    
 
-    debugText();
+    
+    push();
+
+    // fill(curBGColor());
+    // stroke(lineColor());
+    // strokeWeight(10);
+    // strokeJoin(ROUND)
+    // textSize(height / 20);
+    // textAlign(RIGHT, BOTTOM);
+    // textFont('Impact');
+    // text('EASY', width - 10, height);
+
+    // textFont(font);
+
+    
+    // textAlign(LEFT, BOTTOM);
+    // text(`mouseX: ${mouseX} mouseY: ${mouseY}`, 10, height - 100)
+    // text("", 10, height - 10)
+    // text("\uf186", 10, height - 10)
+
+    pop();
+    
+    // debugText();
+
 
     if (frameCount % 200 === 0) adjustResolution();
 }
@@ -67,13 +91,12 @@ function lineWidth() {
 }
 
 function drawBG() {
-    if (COLOR_THEME === 0) background(25,25,25);
-    if (COLOR_THEME === 1) background(curDynColor());
+    background(curBGColor())
 }
 
 function lineColor(alpha) {
     if (COLOR_THEME === 0) return curDynColor(alpha ?? true);
-    if (COLOR_THEME === 1) return color(255,255,255,alpha ? 200 : 255);
+    if (COLOR_THEME === 1) return color(255, 255, 255, alpha ? 200 : 255);
 }
 
 function debugText() {
@@ -108,7 +131,22 @@ function keyPressed() {
 }
 
 function touchStarted() {
+    GameObjectManager.mouseMoved();
+    return false;
+}
+
+function touchEnded() {
     GameObjectManager.onClick();
+    return false;
+}
+
+function mouseMoved() {
+    GameObjectManager.mouseMoved();
+    return false;
+}
+
+function touchMoved() {
+    GameObjectManager.mouseMoved();
     return false;
 }
 

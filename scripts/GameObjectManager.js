@@ -17,7 +17,10 @@ class GameObjectManager {
         this.objects.forEach(obj => obj.onClick(mouseX, mouseY));
     }
 
-    
+    static mouseMoved() {
+
+        this.objects.forEach(obj => obj.mouseMoved(mouseX, mouseY));
+    }
 }
 
 const Manager = GameObjectManager;
