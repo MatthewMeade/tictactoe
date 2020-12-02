@@ -20,7 +20,7 @@ class GameManager {
             values: ["EASY", "MEDIUM", "IMPOSSIBLE"],
             curValue: this.difficulty,
             clickCB: (n) => this.difficulty = n,
-            pos: {x: 15, y: 15},
+            pos: {x: 15, y: 25},
             // size: {x: width, y: height}
         });
 

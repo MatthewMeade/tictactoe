@@ -4,6 +4,10 @@ function easeInOutBack(x) {
     return 1 + c3 * pow(x - 1, 3) + c1 * pow(x - 1, 2);
 }
 
+function easeInCirc(x) {
+    return 1 - sqrt(1 - pow(x, 2));
+    }
+
 // TODO: Infinite Loop?
 class Animator {
     static animations = [];

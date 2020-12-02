@@ -12,6 +12,7 @@ function curThemeColors() {
 
 function setColorTheme(n) {
     COLOR_THEME = n || COLOR_THEME === 1 ? 0 : 1;
+    this.overlay.startSwipe();
     updateCurColor();
 }
 
@@ -26,6 +27,8 @@ function setup() {
     
     this.canvas = createCanvas();
     windowResized();
+
+    this.overlay = new Overlay();
     
     // setTimeout(() => adjustResolution(), 1000);
 }
