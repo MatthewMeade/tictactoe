@@ -1,3 +1,5 @@
+const DIFF_TEXT = ['EASY', 'MEDIUM', 'IMPOSSIBLE'];
+let COLOR_THEME = 0;
 class GameManager {
     constructor() {
         this.newBoardTimeout = null;
@@ -13,32 +15,58 @@ class GameManager {
 
         this.scores = {
             [X_TURN]: 0,
-            [O_TURN]: 0,
-        }
+            [O_TURN]: 0
+        };
 
-        this.diffButton = new DifficultyButton({
-            values: ["EASY", "MEDIUM", "IMPOSSIBLE"],
-            curValue: this.difficulty,
-            clickCB: (n) => this.difficulty = n,
-            pos: {x: 15, y: 25},
-            // size: {x: width, y: height}
+        this.diffButton = new TextButton({
+            text: DIFF_TEXT[this.difficulty],
+            pos: { x: 15, y: 25 },
+            clickCB: () => this.nextDifficulty(),
+            underline: true,
+            animate: true
         });
 
+        this.curTheme = 0;
+
+        this.brightnessButton = new BrightnessButton({
+            clickCB: () => this.setTheme(),
+            curMode: this.curTheme
+        });
+
+        this.overlay = new Overlay();
+    }
+
+    setTheme(n) {
+        this.curTheme = n ?? this.curTheme ? 0 : 1;
+        this.brightnessButton.setMode(this.curTheme);
+        this.overlay.startSwipe();
+        updateCurColor();
+    }
+
+    nextDifficulty() {
+        this.difficulty = (this.difficulty + 1) % DIFF_TEXT.length;
+        this.diffButton.setText(DIFF_TEXT[this.difficulty]);
     }
 
     updateDimensions() {
         this.board.fitToScreen();
         this.diffButton.updateSize();
+
+        this.diffButton.updateDimensions({ pos: { x: 15, y: 25 } });
+
+        const size = Math.min(width, height) * 0.05;
+        this.brightnessButton.updateDimensions({
+            pos: { x: 15, y: height - size - 15 },
+            size: { x: size, y: size }
+        });
+
+        this.overlay = new Overlay();
     }
 
     onClick() {
         if (this.board.win) {
             return this.newBoard();
         }
-    }
-
-    draw() {
-
     }
 
     newBoard() {
@@ -55,7 +83,6 @@ class GameManager {
         if (this.isAi[this.board.turn]) {
             setTimeout(this.makeAiMove.bind(this), 250);
         }
-
     }
 
     onBoardMove(turn) {
@@ -87,12 +114,11 @@ class GameManager {
 
         if (!board.spaces.some((s) => s === 0)) return;
 
-
         let move;
         if (difficulty === 0) move = randomMove(board);
         else if (difficulty === 1) move = randomAvoidLosing(board);
         else move = findBestMove(board);
-        
+
         this.board.makeMove(move);
     }
 }

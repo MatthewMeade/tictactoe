@@ -13,7 +13,7 @@ class Overlay extends GameObject {
         this.pixels = [];
 
         
-        this.maskResScale = 0.5;
+        this.maskResScale = 0.75;
         this.maskWidth = width * this.maskResScale;
         this.maskHeight = height * this.maskResScale;
         

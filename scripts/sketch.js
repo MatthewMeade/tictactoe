@@ -7,36 +7,27 @@ const COLORS_LIGHT = ['f94144', 'f3722c', 'f8961e', 'f9844a', '90be6d', '43aa8b'
 const COLORS_DARK = ['03DAC6', 'FF073A ', '0D80D9', '0DD951', 'BB86FC', 'ffe700'];
 
 function curThemeColors() {
-    return COLOR_THEME === 0 ? COLORS_DARK : COLORS_LIGHT;
-}
-
-function setColorTheme(n) {
-    COLOR_THEME = n || COLOR_THEME === 1 ? 0 : 1;
-    this.overlay.startSwipe();
-    updateCurColor();
+    return this.GM.curTheme === 0 ? COLORS_DARK : COLORS_LIGHT;
 }
 
 function setup() {
     window.renderScale = 1;
     
     colorMode(RGB);
-    // updateCurColor();
     this.curColor = COLORS_DARK.length - 1;
 
-    this.GM = new GameManager();
     
     this.canvas = createCanvas();
     windowResized();
-
-    this.overlay = new Overlay();
     
-    // setTimeout(() => adjustResolution(), 1000);
+    this.GM = new GameManager();
+    windowResized();
 }
 
 function updateCurColor() {
     this.curColor = ((this.curColor ?? 0) + 1) % curThemeColors().length;
 
-    const bgColor = COLOR_THEME ? curDynColor() : color(25, 25, 25);
+    const bgColor = this.GM.curTheme ? curDynColor() : color(25, 25, 25);
     document.body.style.backgroundColor = bgColor.toString();
 }
 
@@ -50,11 +41,10 @@ function curDynColor(alpha) {
 }
 
 function curBGColor(){
-    if (COLOR_THEME === 0) return color(25, 25, 25);
-    if (COLOR_THEME === 1) return curDynColor();
+    if (this.GM.curTheme === 0) return color(25, 25, 25);
+    if (this.GM.curTheme === 1) return curDynColor();
 }
 
-let COLOR_THEME = 0;
 
 function draw() {
     drawBG();
@@ -62,27 +52,7 @@ function draw() {
     Animator.update();
     GameObjectManager.draw();
 
-    
-    push();
-
-    // fill(curBGColor());
-    // stroke(lineColor());
-    // strokeWeight(10);
-    // strokeJoin(ROUND)
-    // textSize(height / 20);
-    // textAlign(RIGHT, BOTTOM);
-    // textFont('Impact');
-    // text('EASY', width - 10, height);
-
-
-    
-    // textAlign(LEFT, BOTTOM);
-    // text(`mouseX: ${mouseX} mouseY: ${mouseY}`, 10, height - 100)
-    // text("", 10, height - 10)
-    // text("\uf186", 10, height - 10)
-
-    pop();
-    
+        
     debugText();
 
 
@@ -98,8 +68,8 @@ function drawBG() {
 }
 
 function lineColor(alpha) {
-    if (COLOR_THEME === 0) return curDynColor(alpha ?? true);
-    if (COLOR_THEME === 1) return color(255, 255, 255, alpha ? 200 : 255);
+    if (this.GM.curTheme === 0) return curDynColor(alpha ?? true);
+    if (this.GM.curTheme === 1) return color(255, 255, 255, alpha ? 200 : 255);
 }
 
 function debugText() {
@@ -120,7 +90,7 @@ function keyPressed() {
     }
 
     if (key === 'b') {
-        setColorTheme();
+        this.GM.setTheme();
     }
 
     if (key === ' ') {
@@ -129,6 +99,11 @@ function keyPressed() {
 
     if (key === 'f') {
         fullscreen(!fullscreen());
+        windowResized();
+    }
+
+    if (key === 'l') {
+        window.renderScale = map(Math.random(), 0, 1, 0.25, 1);
         windowResized();
     }
 }
@@ -158,12 +133,14 @@ function windowResized() {
     const h = window.innerHeight * window.renderScale;
     resizeCanvas(w, h);
 
-    this.canvas.elt.style.width = '100vw';
-    this.canvas.elt.style.height = '100vh';
+    this.canvas.elt.style.width = '100%';
+    this.canvas.elt.style.height = '100%';
 
-    this.GM.updateDimensions();
+    this.GM?.updateDimensions();
+}
 
-    // resizeBoard(this.GM.board);
+function scaleAdjust(n) {
+    return n * window.renderScale;
 }
 
 const SCALE_MIN = 0.1;
