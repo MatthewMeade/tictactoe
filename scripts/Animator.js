@@ -10,7 +10,11 @@ function easeInCirc(x) {
 
 // TODO: Infinite Loop?
 class Animator {
-    static animations = [];
+    // static animations = [];
+
+    static init(){
+        this.animations = [];
+    }
 
     static addAnimation(def, callbacks, curve) {
         return new Promise((resolveP, reject) => {

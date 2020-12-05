@@ -11,6 +11,8 @@ function curThemeColors() {
 }
 
 function setup() {
+    Animator.init();
+    GameObjectManager.init();
     pixelDensity(1)
     
     colorMode(RGB);

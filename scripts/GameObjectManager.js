@@ -1,5 +1,9 @@
 class GameObjectManager {
-    static objects = new Set();
+    // static objects = new Set();
+    
+    static init(){
+        this.objects = new Set();
+    }
 
     static addObject(obj) {
         this.objects.add(obj);
