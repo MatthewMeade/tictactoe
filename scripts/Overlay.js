@@ -14,10 +14,14 @@ class Overlay extends GameObject {
 
         
         this.maskResScale = 0.25;
+        this.maskCanvas = createGraphics(this.maskWidth, this.maskHeight);
+    }
+
+    initContext(){
         this.maskWidth = width * this.maskResScale;
         this.maskHeight = height * this.maskResScale;
         
-        this.maskCanvas = createGraphics(this.maskWidth, this.maskHeight);
+        this.maskCanvas.resizeCanvas(this.maskWidth, this.maskHeight);
         this.maskCanvas.pixelDensity(0.5)
     }
 

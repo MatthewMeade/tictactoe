@@ -27,10 +27,16 @@ class GameManager {
         });
 
         this.curTheme = 0;
-
         this.brightnessButton = new BrightnessButton({
             clickCB: () => this.setTheme(),
-            curMode: this.curTheme
+            curMode: this.curTheme,
+            padding: 15
+        });
+
+        this.fsButton = new FullscreenButton({
+            clickCB: () => this.setFullscreen(),
+            curMode: fullscreen() ? 1 : 0,
+            padding: 15
         });
 
         this.overlay = new Overlay();
@@ -41,6 +47,15 @@ class GameManager {
         this.brightnessButton.setMode(this.curTheme);
         this.overlay.startSwipe();
         updateCurColor();
+    }
+
+    setFullscreen(fs = !fullscreen()) {
+
+        // noLoop();
+        // setTimeout(()=>loop(), 250);
+        fullscreen(fs);
+        this.fsButton.setMode(fs);
+        windowResized();
     }
 
     nextDifficulty() {
@@ -54,13 +69,19 @@ class GameManager {
 
         this.diffButton.updateDimensions({ pos: { x: 15, y: 25 } });
 
-        const size = Math.min(width, height) * 0.05;
+        const size = Math.min(width, height) * 0.1;
         this.brightnessButton.updateDimensions({
-            pos: { x: 15, y: height - size - 15 },
+            pos: { x: 0, y: height - size },
             size: { x: size, y: size }
         });
 
-        this.overlay = new Overlay();
+        this.fsButton.updateDimensions({
+            pos: {x: width  - size, y: height - size},
+            size: { x: size, y: size }
+        })
+        this.fsButton.setMode(!!fullscreen())
+
+        this.overlay.initContext();
     }
 
     onClick() {

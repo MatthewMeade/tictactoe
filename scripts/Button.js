@@ -1,16 +1,18 @@
 class Button extends GameObject {
-    constructor({ pos, size, clickCB }) {
+    constructor({ pos, size, clickCB, padding= 0 }) {
         super({ pos, size });
 
         this.clickCB = clickCB;
+
+        this.padding = padding;
     }
 
     _draw() {
         fill('white');
-        stroke('white');
+        stroke('red');
+        strokeWeight(this.padding || 10);
 
         if (this.mouseHovering) {
-            strokeWeight(10);
             stroke('green');
         }
         rect(0, 0, this.sizeX, this.sizeY);
@@ -125,22 +127,10 @@ class TextButton extends Button {
 }
 
 class BrightnessButton extends Button {
-    constructor({ pos, size, clickCB, curMode = 0 }) {
-        super({ pos, size });
+    constructor({ pos, size, clickCB, curMode = 0, padding}) {
+        super({ pos, size, padding });
 
         this.clickCB = clickCB;
-
-        // this.animateProperty({
-        //     wait: 2000, time: 500, propKey: 'anim'
-        // });
-
-        // if (curMode === 0) {
-        //     this.anim = 0;
-        //     this.anim = 0;
-        // } else {
-        //     this.anim = 1;
-        //     this.anim = 1;
-        // }
 
         this.anim = curMode;
 
@@ -157,33 +147,53 @@ class BrightnessButton extends Button {
             propKey: 'anim',
             from: this.curMode,
             to: newMode,
-            curve: easeInOutBack
+            curve: easeInOutBack,
+            done: () => {
+                // Bit of a hack to keep hover effect after click animation
+                this.mouseMoved(0, 0);
+                this.mouseMoved();
+            }
         });
 
         this.curMode = newMode;
     }
 
+    _onMouseEnter() {
+        this.animateProperty({
+            from: this.anim, to: this.curMode ? 0.9 : 0.1, time: 100, propKey: 'anim'
+        })
+    }
+    
+    _onMouseLeave() {
+        this.animateProperty({
+            from: this.anim, to: this.curMode, time: 100, propKey: 'anim'
+        })
+    }
+
+
     _draw() {
-        // super._draw();
-        const mid = this.sizeX / 2;
+        translate(this.padding, this.padding);
+        const w = this.sizeX - (2 * this.padding);
+
+        const mid = w / 2;
 
         noStroke();
         fill(lineColor());
-        circle(mid, mid, this.sizeX);
+        circle(mid, mid, w);
 
-        const xMin = this.sizeX * 0.7;
-        const yMin = this.sizeX * 0.3;
+        const xMin = w * 0.7;
+        const yMin = w * 0.3;
 
-        const xMax = xMin * 1.5;
+        const xMax = xMin * 1.75;
         const yMax = -yMin;
 
         const x = map(this.anim, 0, 1, xMin, xMax);
         const y = map(this.anim, 0, 1, yMin, yMax);
 
-        fill(curBGColor());
-        circle(x, y, this.sizeX * 0.9);
-
-        if (this.anim > 0) {
+            fill(curBGColor());
+            circle(x, y, w * 0.9);
+            
+        if (this.anim > 0.2) {
             angleMode(DEGREES);
 
             translate(mid, mid);
@@ -198,5 +208,125 @@ class BrightnessButton extends Button {
                 rotate(step);
             }
         }
+    }
+}
+
+class FullscreenButton extends Button {
+    constructor({ pos, size, clickCB, curMode = 0, padding}) {
+        super({ pos, size, padding });
+
+        this.clickCB = clickCB;
+
+        this.anim = curMode;
+
+        this.curMode = curMode;
+    }
+
+    setMode(newMode) {
+        if (newMode === this.curMode) {
+            return;
+        }
+        
+        this.animateProperty({
+            time: 500,
+            propKey: 'anim',
+            from: this.curMode,
+            to: newMode,
+            curve: easeInOutBack,
+            done: () => { 
+                // Bit of a hack to keep hover effect after click animation
+                this.mouseMoved(0, 0);
+                this.mouseMoved();
+            }
+        });
+
+        this.curMode = newMode;
+    }
+
+    _onMouseEnter() {
+        this.animateProperty({
+            from: this.anim, to: this.curMode ? 0.9 : 0.1, time: 100, propKey: 'anim'
+        })
+    }
+    
+    _onMouseLeave() {
+        console.log("Leave")
+        this.animateProperty({
+            from: this.anim, to: this.curMode, time: 100, propKey: 'anim'
+        })
+    }
+
+
+    _draw() {
+
+        translate(this.padding, this.padding);
+        const w = this.sizeX - (2 * this.padding);
+       
+        strokeWeight(5);
+        stroke('white');
+        strokeJoin(ROUND);
+        noFill();
+        stroke(lineColor());
+        strokeWeight(lineWidth()  / 3)
+
+        const s = w / 5;
+        
+        // TODO: Refactor this into only two arrow defs with offsets to position
+        const arr1Out = 
+        [
+            createVector(w - s),
+            createVector(w, 0),
+            createVector(w, s),
+            createVector(w, 0),
+            createVector(w * 0.75, w * 0.25)
+        ];
+
+        
+        const arr1In = 
+        [
+            createVector(w * 0.75,( w * 0.25) - s),
+            createVector(w * 0.75, w * 0.25),
+            createVector(s + w * 0.75, w * 0.25),
+            createVector(w * 0.75, w * 0.25),
+            createVector(w, 0)
+        ];
+
+        const arr2Out = [
+            createVector(0, w - s),
+            createVector(0, w),
+            createVector(s, w),
+            createVector(0, w),
+            createVector(w * 0.25, w * 0.75)
+        ];
+
+
+        const arr2In = [
+            createVector((w * 0.25) - s, w * 0.75),
+            createVector(w * 0.25, w * 0.75),
+            createVector(w * 0.25, w * 0.75 + s),
+            createVector(w * 0.25, w * 0.75),
+            createVector(0, w)
+        ];
+
+
+        // First arrow
+        beginShape();
+        for(let i = 0; i < arr1In.length; i++) {
+            vertex(
+                map(this.anim, 0, 1, arr1Out[i].x, arr1In[i].x),
+                map(this.anim, 0, 1, arr1Out[i].y, arr1In[i].y),
+            );
+        }
+        endShape();
+
+         // Second arrow
+         beginShape();
+         for(let i = 0; i < arr2In.length; i++) {
+             vertex(
+                 map(this.anim, 0, 1, arr2Out[i].x, arr2In[i].x),
+                 map(this.anim, 0, 1, arr2Out[i].y, arr2In[i].y),
+             );
+         }
+         endShape();
     }
 }

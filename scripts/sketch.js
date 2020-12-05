@@ -102,8 +102,7 @@ function keyPressed() {
     }
 
     if (key === 'f') {
-        fullscreen(!fullscreen());
-        windowResized();
+        this.GM.setFullscreen();
     }
 }
 
@@ -131,9 +130,6 @@ function windowResized() {
     const w = window.innerWidth;
     const h = window.innerHeight;
     resizeCanvas(w, h);
-
-    this.canvas.elt.style.width = '100%';
-    this.canvas.elt.style.height = '100%';
 
     this.GM?.updateDimensions();
 }

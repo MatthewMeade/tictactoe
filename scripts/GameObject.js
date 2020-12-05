@@ -163,7 +163,7 @@ class GameObject {
         this._onMouseLeave?.(x, y);
     }
 
-    mouseMoved(x, y) {
+    mouseMoved(x=mouseX, y=mouseY) {
         const isCurInside = this.pointIsInside(x, y);
 
         if (isCurInside === this.mouseHovering) {
