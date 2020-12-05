@@ -13,18 +13,18 @@ class Overlay extends GameObject {
         this.pixels = [];
 
         
-        this.maskResScale = 0.75;
+        this.maskResScale = 0.25;
         this.maskWidth = width * this.maskResScale;
         this.maskHeight = height * this.maskResScale;
         
         this.maskCanvas = createGraphics(this.maskWidth, this.maskHeight);
+        this.maskCanvas.pixelDensity(0.5)
     }
 
     _draw() {
         if (this.maskSize === 1 || this.maskSize === 0) {
             return;
         }
-
 
         this.maskCanvas.erase();
         this.maskCanvas.ellipse(0, this.maskHeight, (this.maskWidth) * this.maskSize * 3);
@@ -50,10 +50,7 @@ class Overlay extends GameObject {
         });
         
         this.img = get();
-        this.img.resize(this.maskWidth, this.maskHeight)
-    }
-
-    startBlend() {
-        loadPixels();
+        this.img.resize(this.maskWidth, this.maskHeight);
+        this.img.filter(BLUR, 2);
     }
 }

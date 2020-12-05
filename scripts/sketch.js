@@ -1,4 +1,4 @@
-const TARGET_FPS = 30;
+
 
 const X_TURN = 1;
 const O_TURN = -1;
@@ -11,17 +11,19 @@ function curThemeColors() {
 }
 
 function setup() {
-    window.renderScale = 1;
+    pixelDensity(1)
     
     colorMode(RGB);
     this.curColor = COLORS_DARK.length - 1;
-
     
     this.canvas = createCanvas();
     windowResized();
     
     this.GM = new GameManager();
     windowResized();
+
+
+    this.showDebug = false;
 }
 
 function updateCurColor() {
@@ -52,11 +54,7 @@ function draw() {
     Animator.update();
     GameObjectManager.draw();
 
-        
-    debugText();
-
-
-    if (frameCount % 200 === 0) adjustResolution();
+    debugText();    
 }
 
 function lineWidth(scale = 1) {
@@ -75,13 +73,19 @@ function lineColor(alpha) {
 function debugText() {
     if (!this.showDebug) return;
 
+    const data = {
+        FPS: frameRate().toFixed(0),
+        width, height,
+        color: `${curDynColor().toString()} - ${curThemeColors()[this.curColor]}`
+    }
+
     push();
+    translate(0, 100)
     fill('white');
     textSize(20);
-    text(`Scale: ${window.renderScale}\nFPS: ${frameRate()}`, 10, 20);
-    text(`Width: ${width}\nHeight: ${height}`, 10, 70);
-    text(`Color: ${curDynColor().toString()} - ${curThemeColors()[this.curColor]}`, 10, 150);
+    text(JSON.stringify(data, null, 2), 0, 0);
     pop();
+
 }
 
 function keyPressed() {
@@ -99,11 +103,6 @@ function keyPressed() {
 
     if (key === 'f') {
         fullscreen(!fullscreen());
-        windowResized();
-    }
-
-    if (key === 'l') {
-        window.renderScale = map(Math.random(), 0, 1, 0.25, 1);
         windowResized();
     }
 }
@@ -129,8 +128,8 @@ function touchMoved() {
 }
 
 function windowResized() {
-    const w = window.innerWidth * window.renderScale;
-    const h = window.innerHeight * window.renderScale;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
     resizeCanvas(w, h);
 
     this.canvas.elt.style.width = '100%';
@@ -139,16 +138,6 @@ function windowResized() {
     this.GM?.updateDimensions();
 }
 
-function scaleAdjust(n) {
-    return n * window.renderScale;
-}
 
-const SCALE_MIN = 0.1;
-function adjustResolution() {
-    const fps = Math.round(frameRate());
 
-    if (fps <= TARGET_FPS && window.renderScale > SCALE_MIN) {
-        window.renderScale /= 2;
-        windowResized();
-    }
-}
+
