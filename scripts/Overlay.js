@@ -44,17 +44,16 @@ class Overlay extends GameObject {
         loadPixels();
 
         this.maskCanvas.background(color(0, 0, 0, 255));
-        
+
         this.animateProperty({
-            from: 0,
-            to: 1,
             time: 300,
             propKey: 'maskSize',
             curve: easeInCirc
         });
-        
+
         this.img = get();
         this.img.resize(this.maskWidth, this.maskHeight);
         this.img.filter(BLUR, 2);
+
     }
 }

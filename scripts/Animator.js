@@ -14,11 +14,27 @@ class Animator {
 
     static init(){
         this.animations = [];
+        this.idCounter = 0;
     }
 
-    static addAnimation(def, callbacks, curve) {
-        return new Promise((resolveP, reject) => {
-            this.animations.push({ def, startTime: Date.now(), callbacks, curve, resolveP });
+    static addAnimation(def, promise) {
+
+        const id = this.idCounter++;
+
+        if (promise) {
+            return new Promise((resolveP, reject) => {
+                Animator.animations.push({ def, startTime: Date.now(), resolveP, id });
+            });
+        }
+
+        Animator.animations.push({ def, startTime: Date.now(), id });
+
+        return id;
+    }
+
+    static stopAnimation(id) {
+        this.animations.forEach((e) => {
+            e.stop == e.stop || (e.id === id)
         });
     }
 
@@ -28,8 +44,13 @@ class Animator {
         const currentAnims = this.animations;
         const updatedAnims = [];
         for (let i = 0; i < currentAnims.length; i++) {
-            const { def, startTime, callbacks, curve, resolveP } = currentAnims[i];
-            const { from = 0, to = 1, time = 1000 } = def;
+            const { def, startTime, resolveP, stop } = currentAnims[i];
+            const { from = 0, to = 1, time = 1000, curve, update, done} = def;
+
+            if (stop) {
+                continue;
+
+            }
 
             const aliveTime = now - startTime;
             const range = to - from;
@@ -43,19 +64,17 @@ class Animator {
 
             const retVal = from + perc * range;
 
-            const { done, update } = callbacks;
 
             if (aliveTime > time) {
                 update && update(to);
                 done && done(to);
-                resolveP(to);
+                resolveP?.(to);
+                currentAnims[i].stop = true;
             } else {
                 update && update(retVal);
                 updatedAnims.push(currentAnims[i]);
             }
         }
-
-        this.animations = updatedAnims;
     }
 
     clearAnimations() {

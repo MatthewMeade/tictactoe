@@ -250,7 +250,6 @@ class FullscreenButton extends Button {
     }
     
     _onMouseLeave() {
-        console.log("Leave")
         this.animateProperty({
             from: this.anim, to: this.curMode, time: 100, propKey: 'anim'
         })

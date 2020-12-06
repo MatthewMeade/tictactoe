@@ -1,5 +1,15 @@
 const DIFF_TEXT = ['EASY', 'MEDIUM', 'IMPOSSIBLE'];
 let COLOR_THEME = 0;
+
+const debounce = (cb, n) => {
+    let time = Date.now();
+    return (...args) => {
+        if ((time + n - Date.now()) < 0) {
+            cb(...args);
+            time = Date.now();
+        }
+    }
+}
 class GameManager {
     constructor() {
         this.newBoardTimeout = null;
@@ -9,15 +19,19 @@ class GameManager {
             [O_TURN]: true
         };
 
-        this.newBoard();
-
-        this.difficulty = 1;
-
         this.scores = {
             [X_TURN]: 0,
             [O_TURN]: 0
         };
+        
 
+        this.newBoard();
+
+        this.setTheme = debounce(() => this._setTheme(), 250);
+        this.setFullscreen = debounce(() => this._setFullscreen(), 250);
+        this.nextDifficulty = debounce(() => this._nextDifficulty(), 250);
+        
+        this.difficulty = 1;
         this.diffButton = new TextButton({
             text: DIFF_TEXT[this.difficulty],
             pos: { x: 15, y: 25 },
@@ -25,6 +39,7 @@ class GameManager {
             underline: true,
             animate: true
         });
+
 
         this.curTheme = 0;
         this.brightnessButton = new BrightnessButton({
@@ -42,23 +57,21 @@ class GameManager {
         this.overlay = new Overlay();
     }
 
-    setTheme(n) {
+    _setTheme(n) {
         this.curTheme = n ?? this.curTheme ? 0 : 1;
         this.brightnessButton.setMode(this.curTheme);
         this.overlay.startSwipe();
         updateCurColor();
     }
 
-    setFullscreen(fs = !fullscreen()) {
+    _setFullscreen(fs = !fullscreen()) {
 
-        // noLoop();
-        // setTimeout(()=>loop(), 250);
         fullscreen(fs);
         this.fsButton.setMode(fs);
         windowResized();
     }
 
-    nextDifficulty() {
+    _nextDifficulty() {
         this.difficulty = (this.difficulty + 1) % DIFF_TEXT.length;
         this.diffButton.setText(DIFF_TEXT[this.difficulty]);
     }

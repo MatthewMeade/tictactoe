@@ -1,11 +1,4 @@
-// TODO: Game Object Manager?
-//       - Call draw on all game objects
-//       - Fire events
-
 // TODO: Support Scaling
-
-// TODO: Onclick
-
 class GameObject {
     constructor({ pos, size, posX, posY, sizeX, sizeY}) {
         this.updateDimensions({
@@ -25,6 +18,13 @@ class GameObject {
         this.mouseHovering = false;
 
         GameObjectManager.addObject(this);
+
+        this.animsByKey = {};
+
+        this.nextFrameQueue = {
+            before: [],
+            after: []
+        }
     }
 
     addChildren(c) {
@@ -58,7 +58,16 @@ class GameObject {
         const {x, y} = this.getParentOffset();
         translate(x, y);
 
+        this.nextFrameQueue.before.forEach(fn => fn());
+        
         this._draw?.(...args);
+        
+        this.nextFrameQueue.after.forEach(fn => fn());
+
+        this.nextFrameQueue = {
+            before: [],
+            after: []
+        }
 
         pop();
     }
@@ -98,7 +107,13 @@ class GameObject {
         };
     }
 
-    async animateProperty({ wait, from, to, time, propKey, done, update, curve }) {
+    animateProperty({ wait, from, to, time, propKey, done, update, curve, key }) {
+        key = (key ?? propKey) ?? '';
+
+        if (key) {
+            this.stopAnimationByKey(key);
+        }
+
         if (wait) {
             return this.startTimer({
                 time: wait,
@@ -108,22 +123,30 @@ class GameObject {
 
         const defaultCB = this._updatePropCB?.(propKey);
 
-        await Animator.addAnimation(
-            { from, to, time },
-            {
-                update: update ?? defaultCB,
-                done: done ?? defaultCB
-            }, curve
-        );
+        const id = Animator.addAnimation({
+            from,
+            to,
+            time,
+            update: update ?? defaultCB,
+            done: done ?? defaultCB,
+            curve
+        });
+
+        this.animsByKey[key] = this.animsByKey[key] ?? [];
+        this.animsByKey[key].push(id);
     }
 
     async startTimer({ time, done, propKey, val }) {
         await Animator.addAnimation(
-            { time },
             {
+                time,
                 done: done ?? (() => this._updatePropCB?.(propKey)(val))
-            }
+            }, true
         );
+    }
+
+    stopAnimationByKey(key) {
+        this.animsByKey[key]?.forEach(id => Animator.stopAnimation(id));
     }
 
     onClick(x, y) {
@@ -177,5 +200,9 @@ class GameObject {
         } else {
             this.onMouseLeave(x, y);
         }
+    }
+
+    queueForNextFrame(fn, when) {
+        this.nextFrameQueue[when].push(fn)
     }
 }
