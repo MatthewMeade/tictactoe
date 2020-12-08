@@ -128,7 +128,6 @@ function touchMoved() {
 }
 
 function windowResized() {
-    console.log("Window Resized")
     const w = window.innerWidth;
     const h = window.innerHeight;
     resizeCanvas(w, h);

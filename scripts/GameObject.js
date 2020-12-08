@@ -1,4 +1,3 @@
-// TODO: Support Scaling
 class GameObject {
     constructor({ pos, size, posX, posY, sizeX, sizeY, zIndex=0}) {
         this.updateDimensions({
@@ -157,7 +156,7 @@ class GameObject {
         x -= _x;
         y -= _y;
         
-        if (x < 0 || y < 0 || x > this.sizeX || y > this.sizeY) {
+        if (!x || !y || x < 0 || y < 0 || x > this.sizeX || y > this.sizeY) {
             return; // Clicked outside
         }
 

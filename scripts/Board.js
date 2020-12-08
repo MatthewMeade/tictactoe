@@ -54,7 +54,6 @@ class Board extends GameObject {
         const color = lineColor();
         stroke(color);
 
-        // TODO: Refactor drawing these shapes
         beginShape();
 
         vertex(0, boxWidth);
@@ -76,12 +75,8 @@ class Board extends GameObject {
 
         endShape();
 
-        // TODO: Pass in scale some other way than as an argument to draw. p5 scale() ?
-        // this.spaceObjs.forEach((s) => s.draw(this.gridAnimState));
-
-        // TODO: Draw one win line at a time
         if (this.wins.length > 0) {
-            this.wins.forEach((win) => {
+            this.wins.forEach((win, i) => {
                 push();
 
                 stroke(lineColor(false));
@@ -125,7 +120,7 @@ class Board extends GameObject {
         }
     }
 
-    _onClick(x, y) {
+    _onClick(x, y) { // TODO: Let spaces handle clicking
         if (this.wins.length !== 0) {
             return;
         }
@@ -229,7 +224,7 @@ class Board extends GameObject {
 
         if (this.wins.length > 0) {
             this.animateProperty({
-                time: 200, // TODO: Draw lines one at a time?
+                time: 200,
                 propKey: 'winLineAnimState'
             });
             this.winCB(this.wins);
@@ -342,6 +337,5 @@ class Board_Space extends GameObject {
     }
 
     _onClick() {
-        console.log(`Clicked Space ${this.index}`);
     }
 }

@@ -97,7 +97,6 @@ class GameManager {
         this.diffButton.updateDimensions({ pos: { x: 15, y: 25 } });
 
         const size = Math.min(width, height) / 10;
-        console.log(`Setting size to: ${size}`)
         this.brightnessButton.updateDimensions({
             pos: { x: 0, y: height - size },
             size: { x: size, y: size }
