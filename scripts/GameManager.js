@@ -45,13 +45,12 @@ class GameManager {
         this.brightnessButton = new BrightnessButton({
             clickCB: () => this.setTheme(),
             curMode: this.curTheme,
-            padding: 15
+            padding: min(width, height) * 0.005
         });
 
         this.fsButton = new FullscreenButton({
             clickCB: () => this.setFullscreen(),
-            curMode: fullscreen() ? 1 : 0,
-            padding: 15
+            curMode: fullscreen() ? 1 : 0
         });
 
         this.overlay = new Overlay();
@@ -68,7 +67,8 @@ class GameManager {
 
         fullscreen(fs);
         this.fsButton.setMode(fs);
-        windowResized();
+        // windowResized();
+        // this.updateDimensions();
     }
 
     _nextDifficulty() {
@@ -82,16 +82,21 @@ class GameManager {
 
         this.diffButton.updateDimensions({ pos: { x: 15, y: 25 } });
 
-        const size = Math.min(width, height) * 0.1;
+        const size = Math.min(width, height) / 10;
+        console.log(`Setting size to: ${size}`)
         this.brightnessButton.updateDimensions({
             pos: { x: 0, y: height - size },
             size: { x: size, y: size }
         });
+        this.brightnessButton.padding = size / 10;
 
         this.fsButton.updateDimensions({
             pos: {x: width  - size, y: height - size},
             size: { x: size, y: size }
         })
+        this.fsButton.padding = size / 10;
+
+        
         this.fsButton.setMode(!!fullscreen())
 
         this.overlay.initContext();
