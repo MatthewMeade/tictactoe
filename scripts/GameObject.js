@@ -1,6 +1,6 @@
 // TODO: Support Scaling
 class GameObject {
-    constructor({ pos, size, posX, posY, sizeX, sizeY}) {
+    constructor({ pos, size, posX, posY, sizeX, sizeY, zIndex=0}) {
         this.updateDimensions({
             pos,
             size,
@@ -17,7 +17,9 @@ class GameObject {
 
         this.mouseHovering = false;
 
-        GameObjectManager.addObject(this);
+        this.zIndex = zIndex;
+
+        GameObjectManager.addObject(this, zIndex);
 
         this.animsByKey = {};
 

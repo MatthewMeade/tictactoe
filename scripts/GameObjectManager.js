@@ -14,7 +14,8 @@ class GameObjectManager {
     }
 
     static draw(){
-        this.objects.forEach(obj => obj.draw());
+        // If this sort causes a performance issue, pre sort on insert
+        [...this.objects].sort((a, b) => a.zIndex - b.zIndex).forEach(obj => obj.draw());
     }
 
     static onClick(){

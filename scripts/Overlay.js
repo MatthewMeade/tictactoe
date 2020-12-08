@@ -4,7 +4,8 @@ class Overlay extends GameObject {
             posX: 0,
             posY: 0,
             sizeX: width,
-            sizeY: height
+            sizeY: height,
+            zIndex: 1
         });
 
         this.maskSize = 0;
@@ -37,7 +38,7 @@ class Overlay extends GameObject {
         const imgClone = this.img.get();
         imgClone.mask(maskImg);
 
-        image(imgClone, 0, 0, width, height, 0, 0, this.maskWidth, this.maskHeight);
+        image(imgClone, -5, -5, width+10, height+10, 0, 0, this.maskWidth, this.maskHeight);
     }
 
     startSwipe() {
