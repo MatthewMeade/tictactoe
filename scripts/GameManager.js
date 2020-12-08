@@ -11,7 +11,7 @@ const debounce = (cb, n) => {
     }
 }
 class GameManager {
-    constructor() {
+    static initialize() {
         this.newBoardTimeout = null;
 
         this.isAi = {
@@ -56,14 +56,14 @@ class GameManager {
         this.overlay = new Overlay();
     }
 
-    _setTheme(n) {
+    static _setTheme(n) {
         this.curTheme = n ?? this.curTheme ? 0 : 1;
         this.brightnessButton.setMode(this.curTheme);
         this.overlay.startSwipe();
         updateCurColor();
     }
 
-    _setFullscreen(fs = !fullscreen()) {
+    static _setFullscreen(fs = !fullscreen()) {
 
         fullscreen(fs);
         this.fsButton.setMode(fs);
@@ -71,7 +71,7 @@ class GameManager {
         // this.updateDimensions();
     }
 
-    _nextDifficulty() {
+    static _nextDifficulty() {
         this.difficulty = (this.difficulty + 1) % DIFF_TEXT.length;
         this.diffButton.setText(DIFF_TEXT[this.difficulty]);
 
@@ -90,7 +90,7 @@ class GameManager {
         }
     }
 
-    updateDimensions() {
+    static updateDimensions() {
         this.board.fitToScreen();
         this.diffButton.updateSize();
 
@@ -116,13 +116,13 @@ class GameManager {
         this.overlay.initContext();
     }
 
-    onClick() {
+    static onClick() {
         if (this.board.win) {
             return this.newBoard();
         }
     }
 
-    newBoard() {
+    static newBoard() {
         clearTimeout(this.newBoardTimeout);
         this.newBoardTimeout = null;
 
@@ -138,13 +138,13 @@ class GameManager {
         }
     }
 
-    onBoardMove(turn) {
+    static onBoardMove(turn) {
         if (this.isAi[turn] && !this.board.win) {
             setTimeout(this.makeAiMove.bind(this), 250);
         }
     }
 
-    onBoardClick(n) {
+    static onBoardClick(n) {
         if (this.isAi[this.board.turn]) {
             return;
         }
@@ -152,7 +152,7 @@ class GameManager {
         this.board.makeMove(n);
     }
 
-    onBoardWin(winner) {
+    static onBoardWin(winner) {
         if (!this.newBoardTimeout) {
             this.newBoardTimeout = setTimeout(() => {
                 updateCurColor();
@@ -162,7 +162,7 @@ class GameManager {
         this.scores[winner]++;
     }
 
-    makeAiMove() {
+    static makeAiMove() {
         const { difficulty, board } = this;
 
         if (!board.spaces.some((s) => s === 0)) return;
@@ -175,3 +175,5 @@ class GameManager {
         this.board.makeMove(move);
     }
 }
+
+const GM = GameManager;
