@@ -1,4 +1,4 @@
-const DIFF_TEXT = ['EASY', 'MEDIUM', 'IMPOSSIBLE'];
+const DIFF_TEXT = ['EASY', 'MEDIUM', 'IMPOSSIBLE', '2 Player'];
 let COLOR_THEME = 0;
 
 const debounce = (cb, n) => {
@@ -74,6 +74,20 @@ class GameManager {
     _nextDifficulty() {
         this.difficulty = (this.difficulty + 1) % DIFF_TEXT.length;
         this.diffButton.setText(DIFF_TEXT[this.difficulty]);
+
+        this.newBoard();
+
+        if (this.difficulty === 3) {
+            this.isAi = {
+                [X_TURN]: false,
+                [O_TURN]: false
+            };
+        } else {
+            this.isAi = {
+                [X_TURN]: false,
+                [O_TURN]: true
+            };
+        }
     }
 
     updateDimensions() {
