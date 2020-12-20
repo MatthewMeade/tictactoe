@@ -15,9 +15,7 @@ class Board extends GameObject {
         }
         this.addChildren(this.spaceObjs);
         this.positionSpaces();
-        this.spaceObjs.forEach(o => o.curTurn = this.turn);
-
-
+        this.spaceObjs.forEach((o) => (o.curTurn = this.turn));
 
         this.clickCB = () => console.log('No Callback defined for board click');
         this.moveCB = () => console.log('No Callback defined for board move');
@@ -120,7 +118,8 @@ class Board extends GameObject {
         }
     }
 
-    _onClick(x, y) { // TODO: Let spaces handle clicking
+    _onClick(x, y) {
+        // TODO: Let spaces handle clicking
         if (this.wins.length !== 0) {
             return;
         }
@@ -146,7 +145,7 @@ class Board extends GameObject {
         this.spaceObjs[n].setSpace(this.turn);
         this.turn *= -1;
 
-        this.spaceObjs.forEach(o => o.curTurn = this.turn);
+        this.spaceObjs.forEach((o) => (o.curTurn = this.turn));
 
         this.checkForWin();
 
@@ -273,12 +272,11 @@ class Board_Space extends GameObject {
 
     _draw() {
         noFill();
-        noFill();
         strokeWeight(lineWidth());
 
         const lc = lineColor();
         if (!this.valueSet) {
-            lc.setAlpha(25)
+            lc.setAlpha(25);
         }
         stroke(lc);
         strokeJoin(ROUND);
@@ -305,12 +303,12 @@ class Board_Space extends GameObject {
         }
     }
 
-    _onMouseEnter(){
+    _onMouseEnter() {
         if (!this.valueSet) {
             this.showSpacePreview(this.curTurn);
         }
     }
-    
+
     _onMouseLeave() {
         if (!this.valueSet) {
             this.showSpacePreview(0);
@@ -336,6 +334,5 @@ class Board_Space extends GameObject {
         this.type = val;
     }
 
-    _onClick() {
-    }
+    _onClick() {}
 }

@@ -4,12 +4,12 @@ let COLOR_THEME = 0;
 const debounce = (cb, n) => {
     let time = Date.now();
     return (...args) => {
-        if ((time + n - Date.now()) < 0) {
+        if (time + n - Date.now() < 0) {
             cb(...args);
             time = Date.now();
         }
-    }
-}
+    };
+};
 class GameManager {
     static initialize() {
         this.newBoardTimeout = null;
@@ -23,14 +23,13 @@ class GameManager {
             [X_TURN]: 0,
             [O_TURN]: 0
         };
-        
 
         this.newBoard();
 
         this.setTheme = debounce(() => this._setTheme(), 250);
         this.setFullscreen = debounce(() => this._setFullscreen(), 250);
         this.nextDifficulty = debounce(() => this._nextDifficulty(), 250);
-        
+
         this.difficulty = 1;
         this.diffButton = new TextButton({
             text: DIFF_TEXT[this.difficulty],
@@ -39,7 +38,6 @@ class GameManager {
             underline: true,
             animate: true
         });
-
 
         this.curTheme = 0;
         this.brightnessButton = new BrightnessButton({
@@ -64,7 +62,6 @@ class GameManager {
     }
 
     static _setFullscreen(fs = !fullscreen()) {
-
         fullscreen(fs);
         this.fsButton.setMode(fs);
         // windowResized();
@@ -104,13 +101,12 @@ class GameManager {
         this.brightnessButton.padding = size / 10;
 
         this.fsButton.updateDimensions({
-            pos: {x: width  - size, y: height - size},
+            pos: { x: width - size, y: height - size },
             size: { x: size, y: size }
-        })
+        });
         this.fsButton.padding = size / 10;
 
-        
-        this.fsButton.setMode(!!fullscreen())
+        this.fsButton.setMode(!!fullscreen());
 
         this.overlay.initContext();
     }
@@ -135,9 +131,12 @@ class GameManager {
         if (this.isAi[this.board.turn]) {
             setTimeout(this.makeAiMove.bind(this), 250);
         }
+
+        Favicon.updateType(this.board.turn);
     }
 
     static onBoardMove(turn) {
+        Favicon.updateType(this.board.turn);
         if (this.isAi[turn] && !this.board.win) {
             setTimeout(this.makeAiMove.bind(this), 250);
         }

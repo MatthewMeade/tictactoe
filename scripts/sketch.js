@@ -66,6 +66,8 @@ function curBGColor() {
 function draw() {
     drawBG();
 
+    Favicon.update();
+
     Animator.update();
     GameObjectManager.draw();
 
