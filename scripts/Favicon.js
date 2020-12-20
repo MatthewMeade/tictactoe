@@ -17,7 +17,7 @@ class Favicon {
         this.drawShape(c);
 
         const url = c.canvas.toDataURL('image.png');
-        // document.querySelector('#favicon').href = url;
+        document.querySelector('#favicon').href = url;
     }
 
     static drawShape(c) {
