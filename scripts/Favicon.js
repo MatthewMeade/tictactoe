@@ -3,7 +3,7 @@ class Favicon {
         if (!this.canvas) {
             // Initialize
             this.canvas = createGraphics(64, 64);
-            this.type = O_TURN;
+            this.type = this.type ?? X_TURN;
         }
         const c = this.canvas;
 
