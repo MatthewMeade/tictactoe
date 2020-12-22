@@ -1,4 +1,4 @@
-const DIFF_TEXT = ['EASY', 'MEDIUM', 'IMPOSSIBLE', '2 Player'];
+const DIFF_TEXT = ['EASY', 'MEDIUM', 'HARD', '2 Player'];
 let COLOR_THEME = 0;
 
 const debounce = (cb, n) => {
@@ -23,6 +23,8 @@ class GameManager {
             [X_TURN]: 0,
             [O_TURN]: 0
         };
+
+        this.boardSize = 3;
 
         this.newBoard();
 
@@ -52,6 +54,8 @@ class GameManager {
         });
 
         this.overlay = new Overlay();
+
+        this.restartAI();
     }
 
     static _setTheme(n) {
@@ -122,7 +126,7 @@ class GameManager {
         this.newBoardTimeout = null;
 
         this.board?.destroy();
-        this.board = new Board();
+        this.board = new Board(this.boardSize);
 
         this.board.clickCB = this.onBoardClick.bind(this);
         this.board.moveCB = this.onBoardMove.bind(this);
@@ -133,12 +137,18 @@ class GameManager {
         }
 
         Favicon.updateType(this.board.turn);
+
+        this.restartAI();
     }
 
     static onBoardMove(turn) {
         Favicon.updateType(this.board.turn);
         if (this.isAi[turn] && !this.board.win) {
-            setTimeout(this.makeAiMove.bind(this), 250);
+            if (this.difficulty !== 2 || this.board.bSize <= 3) {
+                setTimeout(this.makeAiMove.bind(this), 250);
+            } else {
+                this.makeAiMove();
+            }
         }
     }
 
@@ -164,13 +174,24 @@ class GameManager {
         const { difficulty, board } = this;
 
         if (!board.spaces.some((s) => s === 0)) return;
+        const b = { spaces: board.spaces, turn: board.turn };
 
-        let move;
-        if (difficulty === 0) move = randomMove(board);
-        else if (difficulty === 1) move = randomAvoidLosing(board);
-        else move = findBestMove(board);
+        this.aiWorker.postMessage({ type: difficulty, board: b });
+    }
 
-        this.board.makeMove(move);
+    static restartAI() {
+        this.aiWorker?.terminate();
+        this.aiWorker = new Worker('./scripts/AI.js');
+        this.aiWorker.addEventListener('message', ({ data }) => {
+            this.board.makeMove(data);
+        });
+    }
+
+    static setBoardSize(size) {
+        if (size > 1 && size < 10) {
+            this.boardSize = size;
+            this.newBoard();
+        }
     }
 }
 

@@ -123,6 +123,10 @@ function keyPressed() {
     if (key === 'f') {
         GM.setFullscreen();
     }
+
+    if (parseInt(key)) {
+        GM.setBoardSize(parseInt(key));
+    }
 }
 
 function touchStarted() {
