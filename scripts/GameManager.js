@@ -1,15 +1,15 @@
-const DIFF_TEXT = ['EASY', 'MEDIUM', 'IMPOSSIBLE', '2 Player'];
+const DIFF_TEXT = ['EASY', 'MEDIUM', 'HARD', '2 Player'];
 let COLOR_THEME = 0;
 
 const debounce = (cb, n) => {
     let time = Date.now();
     return (...args) => {
-        if ((time + n - Date.now()) < 0) {
+        if (time + n - Date.now() < 0) {
             cb(...args);
             time = Date.now();
         }
-    }
-}
+    };
+};
 class GameManager {
     static initialize() {
         this.newBoardTimeout = null;
@@ -23,14 +23,15 @@ class GameManager {
             [X_TURN]: 0,
             [O_TURN]: 0
         };
-        
+
+        this.boardSize = 3;
 
         this.newBoard();
 
         this.setTheme = debounce(() => this._setTheme(), 250);
         this.setFullscreen = debounce(() => this._setFullscreen(), 250);
         this.nextDifficulty = debounce(() => this._nextDifficulty(), 250);
-        
+
         this.difficulty = 1;
         this.diffButton = new TextButton({
             text: DIFF_TEXT[this.difficulty],
@@ -39,7 +40,6 @@ class GameManager {
             underline: true,
             animate: true
         });
-
 
         this.curTheme = 0;
         this.brightnessButton = new BrightnessButton({
@@ -54,6 +54,8 @@ class GameManager {
         });
 
         this.overlay = new Overlay();
+
+        this.restartAI();
     }
 
     static _setTheme(n) {
@@ -64,7 +66,6 @@ class GameManager {
     }
 
     static _setFullscreen(fs = !fullscreen()) {
-
         fullscreen(fs);
         this.fsButton.setMode(fs);
         // windowResized();
@@ -104,13 +105,12 @@ class GameManager {
         this.brightnessButton.padding = size / 10;
 
         this.fsButton.updateDimensions({
-            pos: {x: width  - size, y: height - size},
+            pos: { x: width - size, y: height - size },
             size: { x: size, y: size }
-        })
+        });
         this.fsButton.padding = size / 10;
 
-        
-        this.fsButton.setMode(!!fullscreen())
+        this.fsButton.setMode(!!fullscreen());
 
         this.overlay.initContext();
     }
@@ -126,7 +126,7 @@ class GameManager {
         this.newBoardTimeout = null;
 
         this.board?.destroy();
-        this.board = new Board();
+        this.board = new Board(this.boardSize);
 
         this.board.clickCB = this.onBoardClick.bind(this);
         this.board.moveCB = this.onBoardMove.bind(this);
@@ -135,11 +135,20 @@ class GameManager {
         if (this.isAi[this.board.turn]) {
             setTimeout(this.makeAiMove.bind(this), 250);
         }
+
+        Favicon.updateType(this.board.turn);
+
+        this.restartAI();
     }
 
     static onBoardMove(turn) {
+        Favicon.updateType(this.board.turn);
         if (this.isAi[turn] && !this.board.win) {
-            setTimeout(this.makeAiMove.bind(this), 250);
+            if (this.difficulty !== 2 || this.board.bSize <= 3) {
+                setTimeout(this.makeAiMove.bind(this), 250);
+            } else {
+                this.makeAiMove();
+            }
         }
     }
 
@@ -165,13 +174,24 @@ class GameManager {
         const { difficulty, board } = this;
 
         if (!board.spaces.some((s) => s === 0)) return;
+        const b = { spaces: board.spaces, turn: board.turn };
 
-        let move;
-        if (difficulty === 0) move = randomMove(board);
-        else if (difficulty === 1) move = randomAvoidLosing(board);
-        else move = findBestMove(board);
+        this.aiWorker.postMessage({ type: difficulty, board: b });
+    }
 
-        this.board.makeMove(move);
+    static restartAI() {
+        this.aiWorker?.terminate();
+        this.aiWorker = new Worker('./scripts/AI.js');
+        this.aiWorker.addEventListener('message', ({ data }) => {
+            this.board.makeMove(data);
+        });
+    }
+
+    static setBoardSize(size) {
+        if (size > 1 && size < 10) {
+            this.boardSize = size;
+            this.newBoard();
+        }
     }
 }
 

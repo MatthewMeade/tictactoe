@@ -1,23 +1,29 @@
 // TODO: Other board types? nxn || nxm(non square) ?
 
 class Board extends GameObject {
-    constructor() {
+    constructor(size) {
         super({});
         this.fitToScreen();
 
+        this.bSize = size ?? 3;
+        this.nSpaces = this.bSize ** 2;
+
         this.turn = X_TURN; // TODO: Support custom first turn
 
-        this.spaces = Array(9).fill(0);
+        this.lw = lineWidth() * (3 / this.bSize);
+
+        this.spaces = Array(this.nSpaces).fill(0);
         this.spaceObjs = [];
-        for (let i = 0; i < 9; i++) {
+
+        for (let i = 0; i < this.nSpaces; i++) {
             this.spaceObjs[i] = new Board_Space({}, i);
             this.spaceObjs[i].setSpace(this.spaces[i]);
+            this.spaceObjs[i].curTurn = this.turn;
+            this.spaceObjs[i].lw = this.lw;
         }
+
         this.addChildren(this.spaceObjs);
         this.positionSpaces();
-        this.spaceObjs.forEach(o => o.curTurn = this.turn);
-
-
 
         this.clickCB = () => console.log('No Callback defined for board click');
         this.moveCB = () => console.log('No Callback defined for board move');
@@ -39,7 +45,7 @@ class Board extends GameObject {
     }
 
     _draw() {
-        const boxWidth = (this.gridAnimState * this.sizeX) / 3;
+        const boxWidth = (this.gridAnimState * this.sizeX) / this.bSize;
 
         noFill();
         strokeJoin(ROUND);
@@ -49,29 +55,40 @@ class Board extends GameObject {
         const _y = (this.sizeY / 2) * (1 - this.gridAnimState);
         translate(_x, _y);
 
-        strokeWeight(lineWidth());
+        this.lw = lineWidth() * (3 / this.bSize);
+        strokeWeight(this.lw);
 
         const color = lineColor();
         stroke(color);
 
         beginShape();
 
-        vertex(0, boxWidth);
+        // More complex drawing to keep transparency without seeing line
+        // overlapping at intersections
+        const numLines = this.bSize - 1;
+        for (let i = 1; i <= numLines; i++) {
+            for (let j = 1; j <= numLines; j++) {
+                vertex(i * boxWidth, j * boxWidth); // Intersection
 
-        vertex(boxWidth * 3, boxWidth);
-        vertex(boxWidth * 2, boxWidth);
+                vertex((i - 1) * boxWidth, j * boxWidth); // Left
+                vertex(i * boxWidth, j * boxWidth);
 
-        vertex(boxWidth * 2, 0);
-        vertex(boxWidth * 2, boxWidth * 3);
+                vertex(i * boxWidth, (j - 1) * boxWidth); // Up
+                vertex(i * boxWidth, j * boxWidth);
 
-        vertex(boxWidth * 2, boxWidth * 2);
-        vertex(boxWidth * 3, boxWidth * 2);
+                if (i === numLines) {
+                    vertex((i + 1) * boxWidth, j * boxWidth); // Right
+                    vertex(i * boxWidth, j * boxWidth);
+                }
 
-        vertex(0, boxWidth * 2);
-        vertex(boxWidth, boxWidth * 2);
+                if (j === numLines) {
+                    vertex(i * boxWidth, (j + 1) * boxWidth); // Down
+                    vertex(i * boxWidth, j * boxWidth);
+                }
+            }
 
-        vertex(boxWidth, boxWidth * 3);
-        vertex(boxWidth, 0);
+            vertex(i * boxWidth, boxWidth);
+        }
 
         endShape();
 
@@ -107,30 +124,31 @@ class Board extends GameObject {
 
     positionSpaces() {
         const curSize = this.sizeX * this.gridAnimState;
-        const boxWidth = curSize / 3;
+        const boxWidth = curSize / this.bSize;
 
         const offsetX = (this.sizeX - curSize) / 2;
         const offsetY = (this.sizeY - curSize) / 2;
 
         for (let i = 0; i < this.spaceObjs.length; i++) {
-            const posX = offsetX + boxWidth * (i % 3);
-            const posY = offsetY + boxWidth * Math.floor(i / 3);
+            const posX = offsetX + boxWidth * (i % this.bSize);
+            const posY = offsetY + boxWidth * Math.floor(i / this.bSize);
 
             this.spaceObjs[i].updateDimensions({ posX, posY, sizeX: boxWidth, sizeY: boxWidth });
         }
     }
 
-    _onClick(x, y) { // TODO: Let spaces handle clicking
+    _onClick(x, y) {
+        // TODO: Let spaces handle clicking
         if (this.wins.length !== 0) {
             return;
         }
 
-        const boxWidth = this.sizeX / 3;
+        const boxWidth = this.sizeX / this.bSize;
 
         const col = Math.floor(x / boxWidth);
         const row = Math.floor(y / boxWidth);
 
-        const index = row * 3 + col;
+        const index = row * this.bSize + col;
 
         if (this.spaces[index] === 0) {
             this.clickCB(index);
@@ -146,7 +164,7 @@ class Board extends GameObject {
         this.spaceObjs[n].setSpace(this.turn);
         this.turn *= -1;
 
-        this.spaceObjs.forEach(o => o.curTurn = this.turn);
+        this.spaceObjs.forEach((o) => (o.curTurn = this.turn));
 
         this.checkForWin();
 
@@ -154,19 +172,19 @@ class Board extends GameObject {
     }
 
     static CheckWin(board) {
-        // TODO: Support checking boards other than 3x3
+        const s = board.bSize || Math.sqrt(board.spaces.length);
 
-        const rowSums = [0, 0, 0]; // y = row
-        const colSums = [0, 0, 0]; // x = col
+        const rowSums = Array(s).fill(0); // y = row
+        const colSums = Array(s).fill(0); // x = col
         const diagSums = [0, 0, 0];
 
         const { spaces } = board;
 
         const wins = [];
 
-        for (let x = 0; x < 3; x++) {
-            for (let y = 0; y < 3; y++) {
-                const i = y + x * 3;
+        for (let x = 0; x < s; x++) {
+            for (let y = 0; y < s; y++) {
+                const i = y + x * s;
                 const val = spaces[i];
 
                 rowSums[x] += val;
@@ -176,34 +194,34 @@ class Board extends GameObject {
                     diagSums[0] += val;
                 }
 
-                if (x + y === 2) {
+                if (x + y === s - 1) {
                     diagSums[1] += val;
                 }
             }
         }
 
-        for (let i = 0; i < 3; i++) {
-            if (Math.abs(rowSums[i]) === 3) {
+        for (let i = 0; i < s; i++) {
+            if (Math.abs(rowSums[i]) === s) {
                 wins.push({
                     type: 'ROW',
                     line: i,
-                    player: rowSums[i] / 3
+                    player: rowSums[i] / s
                 });
             }
 
-            if (Math.abs(colSums[i]) === 3) {
+            if (Math.abs(colSums[i]) === s) {
                 wins.push({
                     type: 'COL',
                     line: i,
-                    player: colSums[i] / 3
+                    player: colSums[i] / s
                 });
             }
 
-            if (Math.abs(diagSums[i]) === 3) {
+            if (Math.abs(diagSums[i]) === s) {
                 wins.push({
                     type: 'DIAG',
                     line: i,
-                    player: diagSums[i] / 3
+                    player: diagSums[i] / s
                 });
             }
         }
@@ -273,12 +291,11 @@ class Board_Space extends GameObject {
 
     _draw() {
         noFill();
-        noFill();
-        strokeWeight(lineWidth());
+        strokeWeight(this.parent.lw);
 
         const lc = lineColor();
         if (!this.valueSet) {
-            lc.setAlpha(25)
+            lc.setAlpha(25);
         }
         stroke(lc);
         strokeJoin(ROUND);
@@ -305,12 +322,12 @@ class Board_Space extends GameObject {
         }
     }
 
-    _onMouseEnter(){
+    _onMouseEnter() {
         if (!this.valueSet) {
             this.showSpacePreview(this.curTurn);
         }
     }
-    
+
     _onMouseLeave() {
         if (!this.valueSet) {
             this.showSpacePreview(0);
@@ -336,6 +353,5 @@ class Board_Space extends GameObject {
         this.type = val;
     }
 
-    _onClick() {
-    }
+    _onClick() {}
 }
